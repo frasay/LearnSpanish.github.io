@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spanish Spark - Learn &amp; Play</title>
+<meta content="Spanish Spark - Gamified Learning" property="og:title"/>
+<meta content="Learn 1000 essential Spanish words with interactive flashcards and track your progress." property="og:description"/>
+<meta content="assets/img_128x128_389a0af3.png" property="og:image"/>
+<meta content="website" property="og:type"/>
+<link href="assets/img_64x64_0c2fd41d.png" rel="icon" type="image/png"/>
+<script src="assets/script_e6170313.js"></script>
+<link href="assets/style_5a05c017.css" rel="stylesheet"/>
+<link href="assets/style_b4fe250e.css" rel="stylesheet"/>
+<script crossorigin="" src="assets/script_dd545da6.js"></script>
+<script src="assets/script_e866d8ad.js"></script>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700;800&display=swap');
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #f0f4f8; /* Light grey-blue background */
+        }
+        /* Flashcard flip animation */
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem; /* 12px */
+            padding: 1.5rem; /* 24px */
+        }
+        .flashcard-front {
+            background: linear-gradient(135deg, #4f46e5, #6366f1); /* Indigo gradient */
+            color: white;
+        }
+        .flashcard-back {
+            background: linear-gradient(135deg, #14b8a6, #2dd4bf); /* Teal gradient */
+            color: white;
+            transform: rotateY(180deg);
+        }
+        /* Custom scrollbar for day selector */
+        #day-selector::-webkit-scrollbar {
+            height: 6px;
+        }
+        #day-selector::-webkit-scrollbar-track {
+            background: #e0e7ff; /* indigo-100 */
+        }
+        #day-selector::-webkit-scrollbar-thumb {
+            background-color: #6366f1; /* indigo-500 */
+            border-radius: 10px;
+        }
+        /* Font Awesome specific styles */
+        @font-face { font-family: 'Font Awesome 6 Free'; font-path: '/chat/webfonts/fa-regular-400'; src: url('/chat/webfonts/fa-regular-400.woff2') format('woff2'), url('/chat/webfonts/fa-regular-400.ttf') format('truetype'); }
+        @font-face { font-family: 'Font Awesome 6 Free'; font-path: '/chat/webfonts/fa-solid-900'; src: url('/chat/webfonts/fa-solid-900.woff2') format('woff2'), url('/chat/webfonts/fa-solid-900.ttf') format('truetype'); }
+        @font-face { font-family: 'Font Awesome 6 Brands'; font-path: '/chat/webfonts/fa-brands-400'; src: url('/chat/webfonts/fa-brands-400.woff2') format('woff2'), url('/chat/webfonts/fa-brands-400.ttf') format('truetype'); }
+
+        /* Button focus states for accessibility */
+        button:focus-visible {
+            outline: 2px solid #2563eb; /* Blue-600 */
+            outline-offset: 2px;
+        }
+        .day-btn:focus-visible {
+             outline: 2px solid #a5b4fc; /* indigo-300 */
+        }
+    </style>
+<script>
+            window.load_data_from_csv = (filename) => {
+                // Implementation needed when code is downloaded
+            };
+
+            window.save_data_to_csv = (filename, data) => {
+                // Implementation needed when code is downloaded
+            };
+
+            window.call_llm = (system_prompt, user_messages, json_fields) => {
+                // Implementation needed when code is downloaded
+            };
+        </script></head>
+<body class="text-gray-900 min-h-screen flex flex-col">
+<header class="bg-white shadow-md sticky top-0 z-10">
+<nav class="container mx-auto p-4 flex justify-between items-center">
+<h1 class="text-2xl font-extrabold text-indigo-600 flex items-center gap-2">
+<i class="fas fa-bolt text-teal-500"></i>
+                Spanish Spark
+            </h1>
+<div class="flex space-x-3">
+<button class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-semibold py-2 px-4 rounded-lg transition duration-200 ease-in-out flex items-center justify-center gap-2 text-sm sm:text-base" id="quick-start-btn" title="Quick Start (100 Words)">
+<i class="fas fa-rocket"></i> <span class="hidden sm:inline">Quick Start</span>
+</button>
+<button class="bg-teal-100 hover:bg-teal-200 text-teal-700 font-semibold py-2 px-4 rounded-lg transition duration-200 ease-in-out flex items-center justify-center gap-2 text-sm sm:text-base" id="thirty-day-btn" title="30-Day Plan (1000 Words)">
+<i class="fas fa-calendar-alt"></i> <span class="hidden sm:inline">30-Day Plan</span>
+</button>
+</div>
+</nav>
+</header>
+<main class="container mx-auto p-4 sm:p-6 flex-grow flex flex-col">
+<div class="hidden bg-white p-4 rounded-lg shadow-md mb-6 border border-indigo-200" id="day-selector-container">
+<h3 class="text-lg font-bold text-indigo-700 mb-3">Select Day</h3>
+<div class="flex space-x-2 overflow-x-auto pb-2" id="day-selector">
+<!-- Day buttons will be generated here -->
+</div>
+</div>
+<div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg flex-grow flex flex-col items-center justify-center border border-gray-200 hidden" id="flashcard-section">
+<h3 class="text-xl sm:text-2xl font-bold text-indigo-800 mb-4 text-center" id="list-title"></h3>
+<div class="flashcard w-full max-w-md h-64 sm:h-72 perspective-[1000px] mb-4 cursor-pointer" id="flashcard" onclick="flipCard()">
+<div class="flashcard-inner">
+<div class="flashcard-front shadow-lg">
+<span class="text-xs uppercase tracking-wider mb-2">Spanish</span>
+<p class="text-3xl sm:text-4xl font-bold" id="spanish-word">...</p>
+</div>
+<div class="flashcard-back shadow-lg">
+<span class="text-xs uppercase tracking-wider mb-2">English</span>
+<p class="text-2xl sm:text-3xl font-semibold" id="english-translation">...</p>
+<p class="text-xs mt-3 opacity-80" id="word-category">...</p>
+</div>
+</div>
+</div>
+<p class="text-sm text-gray-500 mb-4 -mt-2">(Click card to reveal)</p>
+<div class="flex justify-between items-center w-full max-w-md mb-4">
+<button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold p-3 rounded-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" id="prev-btn">
+<i class="fas fa-arrow-left"></i>
+</button>
+<div class="text-sm font-semibold text-gray-600" id="progress-text">Word 0 / 0</div>
+<button class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold p-3 rounded-full transition duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed" id="next-btn">
+<i class="fas fa-arrow-right"></i>
+</button>
+</div>
+<div class="w-full max-w-md bg-gray-200 rounded-full h-3 dark:bg-gray-700 mb-6">
+<div class="bg-gradient-to-r from-teal-400 to-indigo-500 h-3 rounded-full transition-all duration-300 ease-out" id="progress-bar" style="width: 0%"></div>
+</div>
+<div class="text-center hidden animate__animated" id="completion-message">
+<i class="fas fa-party-popper text-5xl text-teal-500 mb-3 animate__animated animate__tada"></i>
+<p class="text-2xl font-bold text-indigo-700">¡Felicidades!</p>
+<p class="text-gray-700 mb-4">You've completed this set!</p>
+<button class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-5 rounded-lg transition duration-200 ease-in-out" id="restart-btn">
+                    Restart Set <i class="fas fa-redo ml-1"></i>
+</button>
+</div>
+</div>
+<div class="text-center p-10 flex-grow flex flex-col items-center justify-center" id="welcome-message">
+<img alt="Learning Illustration" class="mb-6 w-40 h-40 sm:w-48 sm:h-48" src="assets/img_200x200_c50badf5.png"/>
+<h2 class="text-2xl font-bold text-indigo-700 mb-2">Welcome to Spanish Spark!</h2>
+<p class="text-gray-600 max-w-md">Select 'Quick Start' for 100 essential words or choose the '30-Day Plan' to learn 1000 words step-by-step.</p>
+</div>
+</main>
+<footer class="text-center p-4 text-sm text-gray-500 mt-6">
+        Built with <i class="fas fa-heart text-red-500"></i> for language learners.
+    </footer>
+<script>
+        // --- DATA (Keep the same vocabulary array) ---
+        const vocabulary = [ /* ... (Keep the full 1000+ word array from the previous version) ... */
+             // ESSENTIALS (100 words) - Marked with isEssential: true
+            { id: 1, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "hola", english: "hello", isEssential: true },
+            { id: 2, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "adiós", english: "goodbye", isEssential: true },
+            { id: 3, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "gracias", english: "thank you", isEssential: true },
+            { id: 4, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "por favor", english: "please", isEssential: true },
+            { id: 5, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "de nada", english: "you're welcome", isEssential: true },
+            { id: 6, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "sí", english: "yes", isEssential: true },
+            { id: 7, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "no", english: "no", isEssential: true },
+            { id: 8, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "buenos días", english: "good morning", isEssential: true },
+            { id: 9, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "buenas tardes", english: "good afternoon", isEssential: true },
+            { id: 10, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "buenas noches", english: "good evening/night", isEssential: true },
+            { id: 11, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "disculpe", english: "excuse me", isEssential: true },
+            { id: 12, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "lo siento", english: "I'm sorry", isEssential: true },
+            { id: 13, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "perdón", english: "pardon", isEssential: true },
+            { id: 14, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "bienvenido/a", english: "welcome", isEssential: true },
+            { id: 15, category: "ESSENTIALS", subCategory: "Greetings & Basic Expressions", spanish: "salud", english: "cheers/health", isEssential: true },
+            { id: 16, category: "ESSENTIALS", subCategory: "Numbers", spanish: "uno", english: "one", isEssential: true },
+            { id: 17, category: "ESSENTIALS", subCategory: "Numbers", spanish: "dos", english: "two", isEssential: true },
+            { id: 18, category: "ESSENTIALS", subCategory: "Numbers", spanish: "tres", english: "three", isEssential: true },
+            { id: 19, category: "ESSENTIALS", subCategory: "Numbers", spanish: "cuatro", english: "four", isEssential: true },
+            { id: 20, category: "ESSENTIALS", subCategory: "Numbers", spanish: "cinco", english: "five", isEssential: true },
+            { id: 21, category: "ESSENTIALS", subCategory: "Numbers", spanish: "seis", english: "six", isEssential: true },
+            { id: 22, category: "ESSENTIALS", subCategory: "Numbers", spanish: "siete", english: "seven", isEssential: true },
+            { id: 23, category: "ESSENTIALS", subCategory: "Numbers", spanish: "ocho", english: "eight", isEssential: true },
+            { id: 24, category: "ESSENTIALS", subCategory: "Numbers", spanish: "nueve", english: "nine", isEssential: true },
+            { id: 25, category: "ESSENTIALS", subCategory: "Numbers", spanish: "diez", english: "ten", isEssential: true },
+            { id: 26, category: "ESSENTIALS", subCategory: "Numbers", spanish: "veinte", english: "twenty", isEssential: true },
+            { id: 27, category: "ESSENTIALS", subCategory: "Numbers", spanish: "treinta", english: "thirty", isEssential: true },
+            { id: 28, category: "ESSENTIALS", subCategory: "Numbers", spanish: "cuarenta", english: "forty", isEssential: true },
+            { id: 29, category: "ESSENTIALS", subCategory: "Numbers", spanish: "cincuenta", english: "fifty", isEssential: true },
+            { id: 30, category: "ESSENTIALS", subCategory: "Numbers", spanish: "cien", english: "hundred", isEssential: true },
+            { id: 31, category: "ESSENTIALS", subCategory: "Numbers", spanish: "mil", english: "thousand", isEssential: true },
+            { id: 32, category: "ESSENTIALS", subCategory: "Question Words", spanish: "qué", english: "what", isEssential: true },
+            { id: 33, category: "ESSENTIALS", subCategory: "Question Words", spanish: "quién", english: "who", isEssential: true },
+            { id: 34, category: "ESSENTIALS", subCategory: "Question Words", spanish: "cómo", english: "how", isEssential: true },
+            { id: 35, category: "ESSENTIALS", subCategory: "Question Words", spanish: "dónde", english: "where", isEssential: true },
+            { id: 36, category: "ESSENTIALS", subCategory: "Question Words", spanish: "cuándo", english: "when", isEssential: true },
+            { id: 37, category: "ESSENTIALS", subCategory: "Question Words", spanish: "por qué", english: "why", isEssential: true },
+            { id: 38, category: "ESSENTIALS", subCategory: "Question Words", spanish: "cuál", english: "which", isEssential: true },
+            { id: 39, category: "ESSENTIALS", subCategory: "Question Words", spanish: "cuánto", english: "how much", isEssential: true },
+            { id: 40, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "el", english: "the (masculine)", isEssential: true },
+            { id: 41, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "la", english: "the (feminine)", isEssential: true },
+            { id: 42, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "los", english: "the (masculine plural)", isEssential: true },
+            { id: 43, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "las", english: "the (feminine plural)", isEssential: true },
+            { id: 44, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "un", english: "a/an (masculine)", isEssential: true },
+            { id: 45, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "una", english: "a/an (feminine)", isEssential: true },
+            { id: 46, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "unos", english: "some (masculine)", isEssential: true },
+            { id: 47, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "unas", english: "some (feminine)", isEssential: true },
+            { id: 48, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "este", english: "this (masculine)", isEssential: true },
+            { id: 49, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "esta", english: "this (feminine)", isEssential: true },
+            { id: 50, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "estos", english: "these (masculine)", isEssential: true },
+            { id: 51, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "estas", english: "these (feminine)", isEssential: true },
+            { id: 52, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "ese", english: "that (masculine)", isEssential: true },
+            { id: 53, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "esa", english: "that (feminine)", isEssential: true },
+            { id: 54, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "mi", english: "my", isEssential: true },
+            { id: 55, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "tu", english: "your", isEssential: true },
+            { id: 56, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "su", english: "his/her/your (formal)", isEssential: true },
+            { id: 57, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "nuestro", english: "our", isEssential: true },
+            { id: 58, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "todo", english: "all/everything", isEssential: true },
+            { id: 59, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "mucho", english: "much/a lot", isEssential: true },
+            { id: 60, category: "ESSENTIALS", subCategory: "Articles & Determiners", spanish: "poco", english: "little/few", isEssential: true },
+            { id: 61, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "yo", english: "I", isEssential: true },
+            { id: 62, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "tú", english: "you (informal)", isEssential: true },
+            { id: 63, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "él", english: "he", isEssential: true },
+            { id: 64, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "ella", english: "she", isEssential: true },
+            { id: 65, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "usted", english: "you (formal)", isEssential: true },
+            { id: 66, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "nosotros", english: "we", isEssential: true },
+            { id: 67, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "vosotros", english: "you all (Spain)", isEssential: true },
+            { id: 68, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "ellos", english: "they (masculine)", isEssential: true },
+            { id: 69, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "ellas", english: "they (feminine)", isEssential: true },
+            { id: 70, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "ustedes", english: "you all (Latin America)", isEssential: true },
+            { id: 71, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "me", english: "me", isEssential: true },
+            { id: 72, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "te", english: "you (object)", isEssential: true },
+            { id: 73, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "le", english: "him/her (indirect)", isEssential: true },
+            { id: 74, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "nos", english: "us", isEssential: true },
+            { id: 75, category: "ESSENTIALS", subCategory: "Pronouns", spanish: "se", english: "himself/herself/themselves", isEssential: true },
+            { id: 76, category: "COMMON VERBS", subCategory: "Being & Having", spanish: "ser", english: "to be (permanent)", isEssential: true },
+            { id: 77, category: "COMMON VERBS", subCategory: "Being & Having", spanish: "estar", english: "to be (temporary)", isEssential: true },
+            { id: 78, category: "COMMON VERBS", subCategory: "Being & Having", spanish: "tener", english: "to have", isEssential: true },
+            { id: 79, category: "COMMON VERBS", subCategory: "Being & Having", spanish: "haber", english: "to have (auxiliary)", isEssential: true },
+            { id: 80, category: "COMMON VERBS", subCategory: "Being & Having", spanish: "hay", english: "there is/are", isEssential: true },
+            { id: 81, category: "COMMON VERBS", subCategory: "Movement", spanish: "ir", english: "to go", isEssential: true },
+            { id: 82, category: "COMMON VERBS", subCategory: "Movement", spanish: "venir", english: "to come", isEssential: true },
+            { id: 83, category: "COMMON VERBS", subCategory: "Communication", spanish: "hablar", english: "to speak", isEssential: true },
+            { id: 84, category: "COMMON VERBS", subCategory: "Communication", spanish: "decir", english: "to say/tell", isEssential: true },
+            { id: 85, category: "COMMON VERBS", subCategory: "Actions", spanish: "hacer", english: "to do/make", isEssential: true },
+            { id: 86, category: "COMMON VERBS", subCategory: "Actions", spanish: "dar", english: "to give", isEssential: true },
+            { id: 87, category: "COMMON VERBS", subCategory: "Actions", spanish: "tomar", english: "to take/drink", isEssential: true },
+            { id: 88, category: "COMMON VERBS", subCategory: "Actions", spanish: "poner", english: "to put", isEssential: true },
+            { id: 89, category: "COMMON VERBS", subCategory: "Actions", spanish: "querer", english: "to want", isEssential: true },
+            { id: 90, category: "COMMON VERBS", subCategory: "Actions", spanish: "poder", english: "to be able to", isEssential: true },
+            { id: 91, category: "COMMON VERBS", subCategory: "Actions", spanish: "saber", english: "to know (facts)", isEssential: true },
+            { id: 92, category: "COMMON VERBS", subCategory: "Actions", spanish: "ver", english: "to see", isEssential: true },
+            { id: 93, category: "COMMON VERBS", subCategory: "Actions", spanish: "comer", english: "to eat", isEssential: true },
+            { id: 94, category: "COMMON VERBS", subCategory: "Actions", spanish: "vivir", english: "to live", isEssential: true },
+            { id: 95, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "bueno", english: "good", isEssential: true },
+            { id: 96, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "malo", english: "bad", isEssential: true },
+            { id: 97, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "grande", english: "big", isEssential: true },
+            { id: 98, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "pequeño", english: "small", isEssential: true },
+            { id: 99, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "bien", english: "well", isEssential: true },
+            { id: 100, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "ahora", english: "now", isEssential: true },
+            { id: 101, category: "COMMON VERBS", subCategory: "Movement", spanish: "llegar", english: "to arrive", isEssential: false },
+            { id: 102, category: "COMMON VERBS", subCategory: "Movement", spanish: "salir", english: "to leave", isEssential: false },
+            { id: 103, category: "COMMON VERBS", subCategory: "Movement", spanish: "entrar", english: "to enter", isEssential: false },
+            { id: 104, category: "COMMON VERBS", subCategory: "Movement", spanish: "volver", english: "to return", isEssential: false },
+            { id: 105, category: "COMMON VERBS", subCategory: "Movement", spanish: "caminar", english: "to walk", isEssential: false },
+            { id: 106, category: "COMMON VERBS", subCategory: "Movement", spanish: "correr", english: "to run", isEssential: false },
+            { id: 107, category: "COMMON VERBS", subCategory: "Movement", spanish: "subir", english: "to go up", isEssential: false },
+            { id: 108, category: "COMMON VERBS", subCategory: "Movement", spanish: "bajar", english: "to go down", isEssential: false },
+            { id: 109, category: "COMMON VERBS", subCategory: "Movement", spanish: "mover", english: "to move", isEssential: false },
+            { id: 110, category: "COMMON VERBS", subCategory: "Movement", spanish: "seguir", english: "to follow/continue", isEssential: false },
+            { id: 111, category: "COMMON VERBS", subCategory: "Movement", spanish: "llevar", english: "to carry/take", isEssential: false },
+            { id: 112, category: "COMMON VERBS", subCategory: "Movement", spanish: "traer", english: "to bring", isEssential: false },
+            { id: 113, category: "COMMON VERBS", subCategory: "Communication", spanish: "preguntar", english: "to ask", isEssential: false },
+            { id: 114, category: "COMMON VERBS", subCategory: "Communication", spanish: "responder", english: "to answer", isEssential: false },
+            { id: 115, category: "COMMON VERBS", subCategory: "Communication", spanish: "llamar", english: "to call", isEssential: false },
+            { id: 116, category: "COMMON VERBS", subCategory: "Communication", spanish: "escuchar", english: "to listen", isEssential: false },
+            { id: 117, category: "COMMON VERBS", subCategory: "Communication", spanish: "oír", english: "to hear", isEssential: false },
+            { id: 118, category: "COMMON VERBS", subCategory: "Communication", spanish: "leer", english: "to read", isEssential: false },
+            { id: 119, category: "COMMON VERBS", subCategory: "Communication", spanish: "escribir", english: "to write", isEssential: false },
+            { id: 120, category: "COMMON VERBS", subCategory: "Communication", spanish: "explicar", english: "to explain", isEssential: false },
+            { id: 121, category: "COMMON VERBS", subCategory: "Communication", spanish: "entender", english: "to understand", isEssential: false },
+            { id: 122, category: "COMMON VERBS", subCategory: "Communication", spanish: "aprender", english: "to learn", isEssential: false },
+            { id: 123, category: "COMMON VERBS", subCategory: "Communication", spanish: "enseñar", english: "to teach", isEssential: false },
+            { id: 124, category: "COMMON VERBS", subCategory: "Communication", spanish: "pedir", english: "to request/order", isEssential: false },
+            { id: 125, category: "COMMON VERBS", subCategory: "Actions", spanish: "deber", english: "to should/must", isEssential: false },
+            { id: 126, category: "COMMON VERBS", subCategory: "Actions", spanish: "conocer", english: "to know (people/places)", isEssential: false },
+            { id: 127, category: "COMMON VERBS", subCategory: "Actions", spanish: "pensar", english: "to think", isEssential: false },
+            { id: 128, category: "COMMON VERBS", subCategory: "Actions", spanish: "creer", english: "to believe", isEssential: false },
+            { id: 129, category: "COMMON VERBS", subCategory: "Actions", spanish: "sentir", english: "to feel", isEssential: false },
+            { id: 130, category: "COMMON VERBS", subCategory: "Actions", spanish: "mirar", english: "to look at", isEssential: false },
+            { id: 131, category: "COMMON VERBS", subCategory: "Actions", spanish: "buscar", english: "to look for", isEssential: false },
+            { id: 132, category: "COMMON VERBS", subCategory: "Actions", spanish: "encontrar", english: "to find", isEssential: false },
+            { id: 133, category: "COMMON VERBS", subCategory: "Actions", spanish: "perder", english: "to lose", isEssential: false },
+            { id: 134, category: "COMMON VERBS", subCategory: "Actions", spanish: "ganar", english: "to win/earn", isEssential: false },
+            { id: 135, category: "COMMON VERBS", subCategory: "Actions", spanish: "usar", english: "to use", isEssential: false },
+            { id: 136, category: "COMMON VERBS", subCategory: "Actions", spanish: "necesitar", english: "to need", isEssential: false },
+            { id: 137, category: "COMMON VERBS", subCategory: "Actions", spanish: "ayudar", english: "to help", isEssential: false },
+            { id: 138, category: "COMMON VERBS", subCategory: "Actions", spanish: "trabajar", english: "to work", isEssential: false },
+            { id: 139, category: "COMMON VERBS", subCategory: "Actions", spanish: "jugar", english: "to play", isEssential: false },
+            { id: 140, category: "COMMON VERBS", subCategory: "Actions", spanish: "beber", english: "to drink", isEssential: false },
+            { id: 141, category: "COMMON VERBS", subCategory: "Actions", spanish: "dormir", english: "to sleep", isEssential: false },
+            { id: 142, category: "COMMON VERBS", subCategory: "Actions", spanish: "despertar", english: "to wake up", isEssential: false },
+            { id: 143, category: "COMMON VERBS", subCategory: "Actions", spanish: "empezar", english: "to begin", isEssential: false },
+            { id: 144, category: "COMMON VERBS", subCategory: "Actions", spanish: "terminar", english: "to finish", isEssential: false },
+            { id: 145, category: "COMMON VERBS", subCategory: "Actions", spanish: "abrir", english: "to open", isEssential: false },
+            { id: 146, category: "COMMON VERBS", subCategory: "Actions", spanish: "cerrar", english: "to close", isEssential: false },
+            { id: 147, category: "COMMON VERBS", subCategory: "Actions", spanish: "comprar", english: "to buy", isEssential: false },
+            { id: 148, category: "COMMON VERBS", subCategory: "Actions", spanish: "vender", english: "to sell", isEssential: false },
+            { id: 149, category: "COMMON VERBS", subCategory: "Actions", spanish: "pagar", english: "to pay", isEssential: false },
+            { id: 150, category: "COMMON VERBS", subCategory: "Actions", spanish: "costar", english: "to cost", isEssential: false },
+            { id: 151, category: "COMMON VERBS", subCategory: "Actions", spanish: "esperar", english: "to wait/hope", isEssential: false },
+            { id: 152, category: "COMMON VERBS", subCategory: "Actions", spanish: "cambiar", english: "to change", isEssential: false },
+            { id: 153, category: "COMMON VERBS", subCategory: "Actions", spanish: "dejar", english: "to leave/let", isEssential: false },
+            { id: 154, category: "COMMON VERBS", subCategory: "Actions", spanish: "parar", english: "to stop", isEssential: false },
+            { id: 155, category: "COMMON VERBS", subCategory: "Actions", spanish: "comenzar", english: "to start", isEssential: false },
+            { id: 156, category: "COMMON VERBS", subCategory: "Actions", spanish: "continuar", english: "to continue", isEssential: false },
+            { id: 157, category: "COMMON VERBS", subCategory: "Actions", spanish: "gustar", english: "to like", isEssential: false },
+            { id: 158, category: "COMMON VERBS", subCategory: "Actions", spanish: "encantar", english: "to love (thing)", isEssential: false },
+            { id: 159, category: "COMMON VERBS", subCategory: "Actions", spanish: "amar", english: "to love (person)", isEssential: false },
+            { id: 160, category: "COMMON VERBS", subCategory: "Actions", spanish: "odiar", english: "to hate", isEssential: false },
+            { id: 161, category: "COMMON VERBS", subCategory: "Actions", spanish: "preferir", english: "to prefer", isEssential: false },
+            { id: 162, category: "COMMON VERBS", subCategory: "Actions", spanish: "recibir", english: "to receive", isEssential: false },
+            { id: 163, category: "COMMON VERBS", subCategory: "Actions", spanish: "mandar", english: "to send/order", isEssential: false },
+            { id: 164, category: "COMMON VERBS", subCategory: "Actions", spanish: "visitar", english: "to visit", isEssential: false },
+            { id: 165, category: "COMMON VERBS", subCategory: "Actions", spanish: "mostrar", english: "to show", isEssential: false },
+            { id: 166, category: "COMMON VERBS", subCategory: "Actions", spanish: "cocinar", english: "to cook", isEssential: false },
+            { id: 167, category: "COMMON VERBS", subCategory: "Actions", spanish: "lavar", english: "to wash", isEssential: false },
+            { id: 168, category: "COMMON VERBS", subCategory: "Actions", spanish: "limpiar", english: "to clean", isEssential: false },
+            { id: 169, category: "COMMON VERBS", subCategory: "Actions", spanish: "romper", english: "to break", isEssential: false },
+            { id: 170, category: "COMMON VERBS", subCategory: "Actions", spanish: "arreglar", english: "to fix", isEssential: false },
+            { id: 171, category: "COMMON VERBS", subCategory: "Actions", spanish: "recordar", english: "to remember", isEssential: false },
+            { id: 172, category: "COMMON VERBS", subCategory: "Actions", spanish: "olvidar", english: "to forget", isEssential: false },
+            { id: 173, category: "COMMON VERBS", subCategory: "Actions", spanish: "soñar", english: "to dream", isEssential: false },
+            { id: 174, category: "COMMON VERBS", subCategory: "Actions", spanish: "estudiar", english: "to study", isEssential: false },
+            { id: 175, category: "COMMON VERBS", subCategory: "Actions", spanish: "practicar", english: "to practice", isEssential: false },
+            { id: 176, category: "COMMON VERBS", subCategory: "Actions", spanish: "tocar", english: "to touch/play (instrument)", isEssential: false },
+            { id: 177, category: "COMMON VERBS", subCategory: "Actions", spanish: "cantar", english: "to sing", isEssential: false },
+            { id: 178, category: "COMMON VERBS", subCategory: "Actions", spanish: "bailar", english: "to dance", isEssential: false },
+            { id: 179, category: "COMMON VERBS", subCategory: "Actions", spanish: "sonreír", english: "to smile", isEssential: false },
+            { id: 180, category: "COMMON VERBS", subCategory: "Actions", spanish: "reír", english: "to laugh", isEssential: false },
+            { id: 181, category: "COMMON VERBS", subCategory: "Actions", spanish: "llorar", english: "to cry", isEssential: false },
+            { id: 182, category: "NOUNS", subCategory: "People & Relationships", spanish: "persona", english: "person", isEssential: false },
+            { id: 183, category: "NOUNS", subCategory: "People & Relationships", spanish: "hombre", english: "man", isEssential: false },
+            { id: 184, category: "NOUNS", subCategory: "People & Relationships", spanish: "mujer", english: "woman", isEssential: false },
+            { id: 185, category: "NOUNS", subCategory: "People & Relationships", spanish: "niño", english: "boy", isEssential: false },
+            { id: 186, category: "NOUNS", subCategory: "People & Relationships", spanish: "niña", english: "girl", isEssential: false },
+            { id: 187, category: "NOUNS", subCategory: "People & Relationships", spanish: "bebé", english: "baby", isEssential: false },
+            { id: 188, category: "NOUNS", subCategory: "People & Relationships", spanish: "joven", english: "young person", isEssential: false },
+            { id: 189, category: "NOUNS", subCategory: "People & Relationships", spanish: "adulto", english: "adult", isEssential: false },
+            { id: 190, category: "NOUNS", subCategory: "People & Relationships", spanish: "anciano", english: "elderly person", isEssential: false },
+            { id: 191, category: "NOUNS", subCategory: "People & Relationships", spanish: "familia", english: "family", isEssential: false },
+            { id: 192, category: "NOUNS", subCategory: "People & Relationships", spanish: "padre", english: "father", isEssential: false },
+            { id: 193, category: "NOUNS", subCategory: "People & Relationships", spanish: "madre", english: "mother", isEssential: false },
+            { id: 194, category: "NOUNS", subCategory: "People & Relationships", spanish: "hijo", english: "son", isEssential: false },
+            { id: 195, category: "NOUNS", subCategory: "People & Relationships", spanish: "hija", english: "daughter", isEssential: false },
+            { id: 196, category: "NOUNS", subCategory: "People & Relationships", spanish: "hermano", english: "brother", isEssential: false },
+            { id: 197, category: "NOUNS", subCategory: "People & Relationships", spanish: "hermana", english: "sister", isEssential: false },
+            { id: 198, category: "NOUNS", subCategory: "People & Relationships", spanish: "esposo", english: "husband", isEssential: false },
+            { id: 199, category: "NOUNS", subCategory: "People & Relationships", spanish: "esposa", english: "wife", isEssential: false },
+            { id: 200, category: "NOUNS", subCategory: "People & Relationships", spanish: "tío", english: "uncle", isEssential: false },
+            { id: 201, category: "NOUNS", subCategory: "People & Relationships", spanish: "tía", english: "aunt", isEssential: false },
+            { id: 202, category: "NOUNS", subCategory: "People & Relationships", spanish: "primo", english: "cousin (male)", isEssential: false },
+            { id: 203, category: "NOUNS", subCategory: "People & Relationships", spanish: "prima", english: "cousin (female)", isEssential: false },
+            { id: 204, category: "NOUNS", subCategory: "People & Relationships", spanish: "abuelo", english: "grandfather", isEssential: false },
+            { id: 205, category: "NOUNS", subCategory: "People & Relationships", spanish: "abuela", english: "grandmother", isEssential: false },
+            { id: 206, category: "NOUNS", subCategory: "People & Relationships", spanish: "nieto", english: "grandson", isEssential: false },
+            { id: 207, category: "NOUNS", subCategory: "People & Relationships", spanish: "nieta", english: "granddaughter", isEssential: false },
+            { id: 208, category: "NOUNS", subCategory: "People & Relationships", spanish: "amigo", english: "friend (male)", isEssential: false },
+            { id: 209, category: "NOUNS", subCategory: "People & Relationships", spanish: "amiga", english: "friend (female)", isEssential: false },
+            { id: 210, category: "NOUNS", subCategory: "People & Relationships", spanish: "vecino", english: "neighbor (male)", isEssential: false },
+            { id: 211, category: "NOUNS", subCategory: "People & Relationships", spanish: "vecina", english: "neighbor (female)", isEssential: false },
+            { id: 212, category: "NOUNS", subCategory: "People & Relationships", spanish: "colega", english: "colleague", isEssential: false },
+            { id: 213, category: "NOUNS", subCategory: "People & Relationships", spanish: "compañero", english: "companion/partner (male)", isEssential: false },
+            { id: 214, category: "NOUNS", subCategory: "People & Relationships", spanish: "compañera", english: "companion/partner (female)", isEssential: false },
+            { id: 215, category: "NOUNS", subCategory: "People & Relationships", spanish: "jefe", english: "boss (male)", isEssential: false },
+            { id: 216, category: "NOUNS", subCategory: "People & Relationships", spanish: "jefa", english: "boss (female)", isEssential: false },
+            { id: 217, category: "NOUNS", subCategory: "People & Relationships", spanish: "estudiante", english: "student", isEssential: false },
+            { id: 218, category: "NOUNS", subCategory: "People & Relationships", spanish: "profesor", english: "teacher (male)", isEssential: false },
+            { id: 219, category: "NOUNS", subCategory: "People & Relationships", spanish: "profesora", english: "teacher (female)", isEssential: false },
+            { id: 220, category: "NOUNS", subCategory: "People & Relationships", spanish: "doctor", english: "doctor (male)", isEssential: false },
+            { id: 221, category: "NOUNS", subCategory: "People & Relationships", spanish: "doctora", english: "doctor (female)", isEssential: false },
+            { id: 222, category: "NOUNS", subCategory: "People & Relationships", spanish: "cliente", english: "client", isEssential: false },
+            { id: 223, category: "NOUNS", subCategory: "People & Relationships", spanish: "grupo", english: "group", isEssential: false },
+            { id: 224, category: "NOUNS", subCategory: "People & Relationships", spanish: "gente", english: "people", isEssential: false },
+            { id: 225, category: "NOUNS", subCategory: "People & Relationships", spanish: "pareja", english: "couple", isEssential: false },
+            { id: 226, category: "NOUNS", subCategory: "Body & Health", spanish: "cuerpo", english: "body", isEssential: false },
+            { id: 227, category: "NOUNS", subCategory: "Body & Health", spanish: "cabeza", english: "head", isEssential: false },
+            { id: 228, category: "NOUNS", subCategory: "Body & Health", spanish: "cara", english: "face", isEssential: false },
+            { id: 229, category: "NOUNS", subCategory: "Body & Health", spanish: "pelo", english: "hair", isEssential: false },
+            { id: 230, category: "NOUNS", subCategory: "Body & Health", spanish: "ojo", english: "eye", isEssential: false },
+            { id: 231, category: "NOUNS", subCategory: "Body & Health", spanish: "nariz", english: "nose", isEssential: false },
+            { id: 232, category: "NOUNS", subCategory: "Body & Health", spanish: "boca", english: "mouth", isEssential: false },
+            { id: 233, category: "NOUNS", subCategory: "Body & Health", spanish: "oreja", english: "ear", isEssential: false },
+            { id: 234, category: "NOUNS", subCategory: "Body & Health", spanish: "mano", english: "hand", isEssential: false },
+            { id: 235, category: "NOUNS", subCategory: "Body & Health", spanish: "brazo", english: "arm", isEssential: false },
+            { id: 236, category: "NOUNS", subCategory: "Body & Health", spanish: "dedo", english: "finger", isEssential: false },
+            { id: 237, category: "NOUNS", subCategory: "Body & Health", spanish: "pierna", english: "leg", isEssential: false },
+            { id: 238, category: "NOUNS", subCategory: "Body & Health", spanish: "pie", english: "foot", isEssential: false },
+            { id: 239, category: "NOUNS", subCategory: "Body & Health", spanish: "corazón", english: "heart", isEssential: false },
+            { id: 240, category: "NOUNS", subCategory: "Body & Health", spanish: "espalda", english: "back", isEssential: false },
+            { id: 241, category: "NOUNS", subCategory: "Body & Health", spanish: "estómago", english: "stomach", isEssential: false },
+            { id: 242, category: "NOUNS", subCategory: "Body & Health", spanish: "piel", english: "skin", isEssential: false },
+            { id: 243, category: "NOUNS", subCategory: "Body & Health", spanish: "hueso", english: "bone", isEssential: false },
+            { id: 244, category: "NOUNS", subCategory: "Body & Health", spanish: "sangre", english: "blood", isEssential: false },
+            { id: 245, category: "NOUNS", subCategory: "Body & Health", spanish: "salud", english: "health", isEssential: false },
+            { id: 246, category: "NOUNS", subCategory: "Body & Health", spanish: "enfermedad", english: "sickness", isEssential: false },
+            { id: 247, category: "NOUNS", subCategory: "Body & Health", spanish: "dolor", english: "pain", isEssential: false },
+            { id: 248, category: "NOUNS", subCategory: "Body & Health", spanish: "medicina", english: "medicine", isEssential: false },
+            { id: 249, category: "NOUNS", subCategory: "Body & Health", spanish: "hospital", english: "hospital", isEssential: false },
+            { id: 250, category: "NOUNS", subCategory: "Body & Health", spanish: "médico", english: "doctor", isEssential: false },
+            { id: 251, category: "NOUNS", subCategory: "Body & Health", spanish: "dentista", english: "dentist", isEssential: false },
+            { id: 252, category: "NOUNS", subCategory: "Places", spanish: "lugar", english: "place", isEssential: false },
+            { id: 253, category: "NOUNS", subCategory: "Places", spanish: "casa", english: "house", isEssential: false },
+            { id: 254, category: "NOUNS", subCategory: "Places", spanish: "apartamento", english: "apartment", isEssential: false },
+            { id: 255, category: "NOUNS", subCategory: "Places", spanish: "hogar", english: "home", isEssential: false },
+            { id: 256, category: "NOUNS", subCategory: "Places", spanish: "habitación", english: "room", isEssential: false },
+            { id: 257, category: "NOUNS", subCategory: "Places", spanish: "cocina", english: "kitchen", isEssential: false },
+            { id: 258, category: "NOUNS", subCategory: "Places", spanish: "baño", english: "bathroom", isEssential: false },
+            { id: 259, category: "NOUNS", subCategory: "Places", spanish: "dormitorio", english: "bedroom", isEssential: false },
+            { id: 260, category: "NOUNS", subCategory: "Places", spanish: "piso", english: "floor/story", isEssential: false },
+            { id: 261, category: "NOUNS", subCategory: "Places", spanish: "techo", english: "ceiling/roof", isEssential: false },
+            { id: 262, category: "NOUNS", subCategory: "Places", spanish: "pared", english: "wall", isEssential: false },
+            { id: 263, category: "NOUNS", subCategory: "Places", spanish: "puerta", english: "door", isEssential: false },
+            { id: 264, category: "NOUNS", subCategory: "Places", spanish: "ventana", english: "window", isEssential: false },
+            { id: 265, category: "NOUNS", subCategory: "Places", spanish: "oficina", english: "office", isEssential: false },
+            { id: 266, category: "NOUNS", subCategory: "Places", spanish: "escuela", english: "school", isEssential: false },
+            { id: 267, category: "NOUNS", subCategory: "Places", spanish: "universidad", english: "university", isEssential: false },
+            { id: 268, category: "NOUNS", subCategory: "Places", spanish: "biblioteca", english: "library", isEssential: false },
+            { id: 269, category: "NOUNS", subCategory: "Places", spanish: "tienda", english: "store", isEssential: false },
+            { id: 270, category: "NOUNS", subCategory: "Places", spanish: "restaurante", english: "restaurant", isEssential: false },
+            { id: 271, category: "NOUNS", subCategory: "Places", spanish: "café", english: "café", isEssential: false },
+            { id: 272, category: "NOUNS", subCategory: "Places", spanish: "bar", english: "bar", isEssential: false },
+            { id: 273, category: "NOUNS", subCategory: "Places", spanish: "hotel", english: "hotel", isEssential: false },
+            { id: 275, category: "NOUNS", subCategory: "Places", spanish: "banco", english: "bank", isEssential: false },
+            { id: 276, category: "NOUNS", subCategory: "Places", spanish: "correo", english: "post office", isEssential: false },
+            { id: 277, category: "NOUNS", subCategory: "Places", spanish: "mercado", english: "market", isEssential: false },
+            { id: 278, category: "NOUNS", subCategory: "Places", spanish: "supermercado", english: "supermarket", isEssential: false },
+            { id: 279, category: "NOUNS", subCategory: "Places", spanish: "cine", english: "cinema", isEssential: false },
+            { id: 280, category: "NOUNS", subCategory: "Places", spanish: "teatro", english: "theater", isEssential: false },
+            { id: 281, category: "NOUNS", subCategory: "Places", spanish: "museo", english: "museum", isEssential: false },
+            { id: 282, category: "NOUNS", subCategory: "Places", spanish: "iglesia", english: "church", isEssential: false },
+            { id: 283, category: "NOUNS", subCategory: "Places", spanish: "parque", english: "park", isEssential: false },
+            { id: 284, category: "NOUNS", subCategory: "Places", spanish: "playa", english: "beach", isEssential: false },
+            { id: 285, category: "NOUNS", subCategory: "Places", spanish: "montaña", english: "mountain", isEssential: false },
+            { id: 286, category: "NOUNS", subCategory: "Places", spanish: "río", english: "river", isEssential: false },
+            { id: 287, category: "NOUNS", subCategory: "Places", spanish: "lago", english: "lake", isEssential: false },
+            { id: 288, category: "NOUNS", subCategory: "Places", spanish: "mar", english: "sea", isEssential: false },
+            { id: 289, category: "NOUNS", subCategory: "Places", spanish: "océano", english: "ocean", isEssential: false },
+            { id: 290, category: "NOUNS", subCategory: "Places", spanish: "bosque", english: "forest", isEssential: false },
+            { id: 291, category: "NOUNS", subCategory: "Places", spanish: "campo", english: "countryside", isEssential: false },
+            { id: 292, category: "NOUNS", subCategory: "Places", spanish: "ciudad", english: "city", isEssential: false },
+            { id: 293, category: "NOUNS", subCategory: "Places", spanish: "pueblo", english: "town/village", isEssential: false },
+            { id: 294, category: "NOUNS", subCategory: "Places", spanish: "país", english: "country", isEssential: false },
+            { id: 295, category: "NOUNS", subCategory: "Places", spanish: "mundo", english: "world", isEssential: false },
+            { id: 296, category: "NOUNS", subCategory: "Places", spanish: "calle", english: "street", isEssential: false },
+            { id: 297, category: "NOUNS", subCategory: "Places", spanish: "avenida", english: "avenue", isEssential: false },
+            { id: 298, category: "NOUNS", subCategory: "Places", spanish: "esquina", english: "corner", isEssential: false },
+            { id: 299, category: "NOUNS", subCategory: "Places", spanish: "centro", english: "center/downtown", isEssential: false },
+            { id: 300, category: "NOUNS", subCategory: "Places", spanish: "aeropuerto", english: "airport", isEssential: false },
+            { id: 301, category: "NOUNS", subCategory: "Places", spanish: "estación", english: "station", isEssential: false },
+            { id: 302, category: "NOUNS", subCategory: "Places", spanish: "frontera", english: "border", isEssential: false },
+            { id: 303, category: "NOUNS", subCategory: "Time & Weather", spanish: "tiempo", english: "time/weather", isEssential: false },
+            { id: 304, category: "NOUNS", subCategory: "Time & Weather", spanish: "hora", english: "hour", isEssential: false },
+            { id: 305, category: "NOUNS", subCategory: "Time & Weather", spanish: "minuto", english: "minute", isEssential: false },
+            { id: 306, category: "NOUNS", subCategory: "Time & Weather", spanish: "segundo", english: "second", isEssential: false },
+            { id: 307, category: "NOUNS", subCategory: "Time & Weather", spanish: "día", english: "day", isEssential: false },
+            { id: 308, category: "NOUNS", subCategory: "Time & Weather", spanish: "noche", english: "night", isEssential: false },
+            { id: 309, category: "NOUNS", subCategory: "Time & Weather", spanish: "mañana", english: "morning", isEssential: false },
+            { id: 310, category: "NOUNS", subCategory: "Time & Weather", spanish: "tarde", english: "afternoon", isEssential: false },
+            { id: 311, category: "NOUNS", subCategory: "Time & Weather", spanish: "semana", english: "week", isEssential: false },
+            { id: 312, category: "NOUNS", subCategory: "Time & Weather", spanish: "mes", english: "month", isEssential: false },
+            { id: 313, category: "NOUNS", subCategory: "Time & Weather", spanish: "año", english: "year", isEssential: false },
+            { id: 314, category: "NOUNS", subCategory: "Time & Weather", spanish: "hoy", english: "today", isEssential: false },
+            { id: 315, category: "NOUNS", subCategory: "Time & Weather", spanish: "ayer", english: "yesterday", isEssential: false },
+            { id: 316, category: "NOUNS", subCategory: "Time & Weather", spanish: "mañana", english: "tomorrow", isEssential: false },
+            { id: 317, category: "NOUNS", subCategory: "Time & Weather", spanish: "estación", english: "season", isEssential: false },
+            { id: 318, category: "NOUNS", subCategory: "Time & Weather", spanish: "invierno", english: "winter", isEssential: false },
+            { id: 319, category: "NOUNS", subCategory: "Time & Weather", spanish: "primavera", english: "spring", isEssential: false },
+            { id: 320, category: "NOUNS", subCategory: "Time & Weather", spanish: "verano", english: "summer", isEssential: false },
+            { id: 321, category: "NOUNS", subCategory: "Time & Weather", spanish: "otoño", english: "autumn", isEssential: false },
+            { id: 322, category: "NOUNS", subCategory: "Time & Weather", spanish: "clima", english: "climate", isEssential: false },
+            { id: 323, category: "NOUNS", subCategory: "Time & Weather", spanish: "temperatura", english: "temperature", isEssential: false },
+            { id: 324, category: "NOUNS", subCategory: "Time & Weather", spanish: "sol", english: "sun", isEssential: false },
+            { id: 325, category: "NOUNS", subCategory: "Time & Weather", spanish: "luna", english: "moon", isEssential: false },
+            { id: 326, category: "NOUNS", subCategory: "Time & Weather", spanish: "estrella", english: "star", isEssential: false },
+            { id: 327, category: "NOUNS", subCategory: "Time & Weather", spanish: "lluvia", english: "rain", isEssential: false },
+            { id: 328, category: "NOUNS", subCategory: "Time & Weather", spanish: "nieve", english: "snow", isEssential: false },
+            { id: 329, category: "NOUNS", subCategory: "Time & Weather", spanish: "viento", english: "wind", isEssential: false },
+            { id: 330, category: "NOUNS", subCategory: "Time & Weather", spanish: "tormenta", english: "storm", isEssential: false },
+            { id: 331, category: "NOUNS", subCategory: "Time & Weather", spanish: "calor", english: "heat", isEssential: false },
+            { id: 332, category: "NOUNS", subCategory: "Time & Weather", spanish: "frío", english: "cold", isEssential: false },
+            { id: 333, category: "NOUNS", subCategory: "Time & Weather", spanish: "nube", english: "cloud", isEssential: false },
+            { id: 334, category: "NOUNS", subCategory: "Food & Drink", spanish: "comida", english: "food", isEssential: false },
+            { id: 335, category: "NOUNS", subCategory: "Food & Drink", spanish: "desayuno", english: "breakfast", isEssential: false },
+            { id: 336, category: "NOUNS", subCategory: "Food & Drink", spanish: "almuerzo", english: "lunch", isEssential: false },
+            { id: 337, category: "NOUNS", subCategory: "Food & Drink", spanish: "cena", english: "dinner", isEssential: false },
+            { id: 338, category: "NOUNS", subCategory: "Food & Drink", spanish: "postre", english: "dessert", isEssential: false },
+            { id: 339, category: "NOUNS", subCategory: "Food & Drink", spanish: "pan", english: "bread", isEssential: false },
+            { id: 340, category: "NOUNS", subCategory: "Food & Drink", spanish: "arroz", english: "rice", isEssential: false },
+            { id: 341, category: "NOUNS", subCategory: "Food & Drink", spanish: "pasta", english: "pasta", isEssential: false },
+            { id: 342, category: "NOUNS", subCategory: "Food & Drink", spanish: "carne", english: "meat", isEssential: false },
+            { id: 343, category: "NOUNS", subCategory: "Food & Drink", spanish: "pollo", english: "chicken", isEssential: false },
+            { id: 344, category: "NOUNS", subCategory: "Food & Drink", spanish: "pescado", english: "fish", isEssential: false },
+            { id: 345, category: "NOUNS", subCategory: "Food & Drink", spanish: "cerdo", english: "pork", isEssential: false },
+            { id: 346, category: "NOUNS", subCategory: "Food & Drink", spanish: "res", english: "beef", isEssential: false },
+            { id: 347, category: "NOUNS", subCategory: "Food & Drink", spanish: "huevo", english: "egg", isEssential: false },
+            { id: 348, category: "NOUNS", subCategory: "Food & Drink", spanish: "queso", english: "cheese", isEssential: false },
+            { id: 349, category: "NOUNS", subCategory: "Food & Drink", spanish: "leche", english: "milk", isEssential: false },
+            { id: 350, category: "NOUNS", subCategory: "Food & Drink", spanish: "yogur", english: "yogurt", isEssential: false },
+            { id: 351, category: "NOUNS", subCategory: "Food & Drink", spanish: "mantequilla", english: "butter", isEssential: false },
+            { id: 352, category: "NOUNS", subCategory: "Food & Drink", spanish: "aceite", english: "oil", isEssential: false },
+            { id: 353, category: "NOUNS", subCategory: "Food & Drink", spanish: "sal", english: "salt", isEssential: false },
+            { id: 354, category: "NOUNS", subCategory: "Food & Drink", spanish: "azúcar", english: "sugar", isEssential: false },
+            { id: 355, category: "NOUNS", subCategory: "Food & Drink", spanish: "fruta", english: "fruit", isEssential: false },
+            { id: 356, category: "NOUNS", subCategory: "Food & Drink", spanish: "manzana", english: "apple", isEssential: false },
+            { id: 357, category: "NOUNS", subCategory: "Food & Drink", spanish: "plátano", english: "banana", isEssential: false },
+            { id: 358, category: "NOUNS", subCategory: "Food & Drink", spanish: "naranja", english: "orange", isEssential: false },
+            { id: 359, category: "NOUNS", subCategory: "Food & Drink", spanish: "limón", english: "lemon", isEssential: false },
+            { id: 360, category: "NOUNS", subCategory: "Food & Drink", spanish: "uva", english: "grape", isEssential: false },
+            { id: 361, category: "NOUNS", subCategory: "Food & Drink", spanish: "fresa", english: "strawberry", isEssential: false },
+            { id: 362, category: "NOUNS", subCategory: "Food & Drink", spanish: "verdura", english: "vegetable", isEssential: false },
+            { id: 363, category: "NOUNS", subCategory: "Food & Drink", spanish: "patata", english: "potato", isEssential: false },
+            { id: 364, category: "NOUNS", subCategory: "Food & Drink", spanish: "tomate", english: "tomato", isEssential: false },
+            { id: 365, category: "NOUNS", subCategory: "Food & Drink", spanish: "cebolla", english: "onion", isEssential: false },
+            { id: 366, category: "NOUNS", subCategory: "Food & Drink", spanish: "zanahoria", english: "carrot", isEssential: false },
+            { id: 367, category: "NOUNS", subCategory: "Food & Drink", spanish: "lechuga", english: "lettuce", isEssential: false },
+            { id: 368, category: "NOUNS", subCategory: "Food & Drink", spanish: "bebida", english: "drink", isEssential: false },
+            { id: 369, category: "NOUNS", subCategory: "Food & Drink", spanish: "agua", english: "water", isEssential: false },
+            { id: 370, category: "NOUNS", subCategory: "Food & Drink", spanish: "café", english: "coffee", isEssential: false },
+            { id: 371, category: "NOUNS", subCategory: "Food & Drink", spanish: "té", english: "tea", isEssential: false },
+            { id: 372, category: "NOUNS", subCategory: "Food & Drink", spanish: "jugo", english: "juice", isEssential: false },
+            { id: 373, category: "NOUNS", subCategory: "Food & Drink", spanish: "refresco", english: "soda", isEssential: false },
+            { id: 374, category: "NOUNS", subCategory: "Food & Drink", spanish: "cerveza", english: "beer", isEssential: false },
+            { id: 375, category: "NOUNS", subCategory: "Food & Drink", spanish: "vino", english: "wine", isEssential: false },
+            { id: 376, category: "NOUNS", subCategory: "Objects & Tools", spanish: "cosa", english: "thing", isEssential: false },
+            { id: 377, category: "NOUNS", subCategory: "Objects & Tools", spanish: "objeto", english: "object", isEssential: false },
+            { id: 378, category: "NOUNS", subCategory: "Objects & Tools", spanish: "mesa", english: "table", isEssential: false },
+            { id: 379, category: "NOUNS", subCategory: "Objects & Tools", spanish: "silla", english: "chair", isEssential: false },
+            { id: 380, category: "NOUNS", subCategory: "Objects & Tools", spanish: "cama", english: "bed", isEssential: false },
+            { id: 381, category: "NOUNS", subCategory: "Objects & Tools", spanish: "sofá", english: "sofa", isEssential: false },
+            { id: 382, category: "NOUNS", subCategory: "Objects & Tools", spanish: "lámpara", english: "lamp", isEssential: false },
+            { id: 383, category: "NOUNS", subCategory: "Objects & Tools", spanish: "luz", english: "light", isEssential: false },
+            { id: 384, category: "NOUNS", subCategory: "Objects & Tools", spanish: "reloj", english: "clock/watch", isEssential: false },
+            { id: 385, category: "NOUNS", subCategory: "Objects & Tools", spanish: "teléfono", english: "telephone", isEssential: false },
+            { id: 386, category: "NOUNS", subCategory: "Objects & Tools", spanish: "móvil", english: "mobile phone", isEssential: false },
+            { id: 387, category: "NOUNS", subCategory: "Objects & Tools", spanish: "computadora", english: "computer", isEssential: false },
+            { id: 388, category: "NOUNS", subCategory: "Objects & Tools", spanish: "televisión", english: "television", isEssential: false },
+            { id: 389, category: "NOUNS", subCategory: "Objects & Tools", spanish: "radio", english: "radio", isEssential: false },
+            { id: 390, category: "NOUNS", subCategory: "Objects & Tools", spanish: "cámara", english: "camera", isEssential: false },
+            { id: 391, category: "NOUNS", subCategory: "Objects & Tools", spanish: "libro", english: "book", isEssential: false },
+            { id: 392, category: "NOUNS", subCategory: "Objects & Tools", spanish: "revista", english: "magazine", isEssential: false },
+            { id: 393, category: "NOUNS", subCategory: "Objects & Tools", spanish: "periódico", english: "newspaper", isEssential: false },
+            { id: 394, category: "NOUNS", subCategory: "Objects & Tools", spanish: "papel", english: "paper", isEssential: false },
+            { id: 395, category: "NOUNS", subCategory: "Objects & Tools", spanish: "lápiz", english: "pencil", isEssential: false },
+            { id: 396, category: "NOUNS", subCategory: "Objects & Tools", spanish: "bolígrafo", english: "pen", isEssential: false },
+            { id: 397, category: "NOUNS", subCategory: "Objects & Tools", spanish: "cuaderno", english: "notebook", isEssential: false },
+            { id: 398, category: "NOUNS", subCategory: "Objects & Tools", spanish: "bolsa", english: "bag", isEssential: false },
+            { id: 399, category: "NOUNS", subCategory: "Objects & Tools", spanish: "caja", english: "box", isEssential: false },
+            { id: 400, category: "NOUNS", subCategory: "Objects & Tools", spanish: "llave", english: "key", isEssential: false },
+            { id: 401, category: "NOUNS", subCategory: "Objects & Tools", spanish: "dinero", english: "money", isEssential: false },
+            { id: 402, category: "NOUNS", subCategory: "Objects & Tools", spanish: "tarjeta", english: "card", isEssential: false },
+            { id: 403, category: "NOUNS", subCategory: "Objects & Tools", spanish: "moneda", english: "coin", isEssential: false },
+            { id: 404, category: "NOUNS", subCategory: "Objects & Tools", spanish: "billete", english: "bill/banknote", isEssential: false },
+            { id: 405, category: "NOUNS", subCategory: "Objects & Tools", spanish: "ropa", english: "clothing", isEssential: false },
+            { id: 406, category: "NOUNS", subCategory: "Objects & Tools", spanish: "camisa", english: "shirt", isEssential: false },
+            { id: 407, category: "NOUNS", subCategory: "Objects & Tools", spanish: "pantalón", english: "pants", isEssential: false },
+            { id: 408, category: "NOUNS", subCategory: "Objects & Tools", spanish: "vestido", english: "dress", isEssential: false },
+            { id: 409, category: "NOUNS", subCategory: "Objects & Tools", spanish: "falda", english: "skirt", isEssential: false },
+            { id: 410, category: "NOUNS", subCategory: "Objects & Tools", spanish: "zapato", english: "shoe", isEssential: false },
+            { id: 411, category: "NOUNS", subCategory: "Objects & Tools", spanish: "sombrero", english: "hat", isEssential: false },
+            { id: 412, category: "NOUNS", subCategory: "Objects & Tools", spanish: "abrigo", english: "coat", isEssential: false },
+            { id: 413, category: "NOUNS", subCategory: "Objects & Tools", spanish: "chaqueta", english: "jacket", isEssential: false },
+            { id: 414, category: "NOUNS", subCategory: "Objects & Tools", spanish: "gafas", english: "glasses", isEssential: false },
+            { id: 416, category: "NOUNS", subCategory: "Objects & Tools", spanish: "bolso", english: "purse/handbag", isEssential: false },
+            { id: 417, category: "NOUNS", subCategory: "Objects & Tools", spanish: "paraguas", english: "umbrella", isEssential: false },
+            { id: 418, category: "NOUNS", subCategory: "Objects & Tools", spanish: "carro/coche", english: "car", isEssential: false },
+            { id: 419, category: "NOUNS", subCategory: "Objects & Tools", spanish: "bicicleta", english: "bicycle", isEssential: false },
+            { id: 420, category: "NOUNS", subCategory: "Objects & Tools", spanish: "autobús", english: "bus", isEssential: false },
+            { id: 421, category: "NOUNS", subCategory: "Objects & Tools", spanish: "tren", english: "train", isEssential: false },
+            { id: 422, category: "NOUNS", subCategory: "Objects & Tools", spanish: "avión", english: "airplane", isEssential: false },
+            { id: 423, category: "NOUNS", subCategory: "Objects & Tools", spanish: "barco", english: "boat", isEssential: false },
+            { id: 424, category: "NOUNS", subCategory: "Objects & Tools", spanish: "herramienta", english: "tool", isEssential: false },
+            { id: 425, category: "NOUNS", subCategory: "Objects & Tools", spanish: "máquina", english: "machine", isEssential: false },
+            { id: 426, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "alto", english: "tall/high", isEssential: false },
+            { id: 427, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "bajo", english: "short/low", isEssential: false },
+            { id: 428, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "largo", english: "long", isEssential: false },
+            { id: 429, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "corto", english: "short", isEssential: false },
+            { id: 430, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "ancho", english: "wide", isEssential: false },
+            { id: 431, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "estrecho", english: "narrow", isEssential: false },
+            { id: 432, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "grueso", english: "thick", isEssential: false },
+            { id: 433, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "delgado", english: "thin", isEssential: false },
+            { id: 434, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "pesado", english: "heavy", isEssential: false },
+            { id: 435, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "ligero", english: "light (weight)", isEssential: false },
+            { id: 436, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "duro", english: "hard", isEssential: false },
+            { id: 437, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "suave", english: "soft", isEssential: false },
+            { id: 438, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "fuerte", english: "strong", isEssential: false },
+            { id: 439, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "débil", english: "weak", isEssential: false },
+            { id: 440, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "rápido", english: "fast", isEssential: false },
+            { id: 441, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "lento", english: "slow", isEssential: false },
+            { id: 442, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "caliente", english: "hot", isEssential: false },
+            { id: 443, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "frío", english: "cold", isEssential: false },
+            { id: 444, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "tibio", english: "warm", isEssential: false },
+            { id: 445, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "fresco", english: "cool", isEssential: false },
+            { id: 446, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "mojado", english: "wet", isEssential: false },
+            { id: 447, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "seco", english: "dry", isEssential: false },
+            { id: 448, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "limpio", english: "clean", isEssential: false },
+            { id: 449, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "sucio", english: "dirty", isEssential: false },
+            { id: 450, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "lleno", english: "full", isEssential: false },
+            { id: 451, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "vacío", english: "empty", isEssential: false },
+            { id: 452, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "abierto", english: "open", isEssential: false },
+            { id: 453, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "cerrado", english: "closed", isEssential: false },
+            { id: 454, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "fácil", english: "easy", isEssential: false },
+            { id: 455, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "difícil", english: "difficult", isEssential: false },
+            { id: 456, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "simple", english: "simple", isEssential: false },
+            { id: 457, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "complicado", english: "complicated", isEssential: false },
+            { id: 458, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "posible", english: "possible", isEssential: false },
+            { id: 459, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "imposible", english: "impossible", isEssential: false },
+            { id: 460, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "caro", english: "expensive", isEssential: false },
+            { id: 461, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "barato", english: "cheap", isEssential: false },
+            { id: 462, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "rico", english: "rich/tasty", isEssential: false },
+            { id: 463, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "pobre", english: "poor", isEssential: false },
+            { id: 464, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "nuevo", english: "new", isEssential: false },
+            { id: 465, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "viejo", english: "old", isEssential: false },
+            { id: 466, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "joven", english: "young", isEssential: false },
+            { id: 467, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "antiguo", english: "ancient", isEssential: false },
+            { id: 468, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "moderno", english: "modern", isEssential: false },
+            { id: 469, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "bonito", english: "pretty", isEssential: false },
+            { id: 470, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "feo", english: "ugly", isEssential: false },
+            { id: 471, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "hermoso", english: "beautiful", isEssential: false },
+            { id: 472, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "claro", english: "clear/light", isEssential: false },
+            { id: 473, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "oscuro", english: "dark", isEssential: false },
+            { id: 474, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "brillante", english: "bright", isEssential: false },
+            { id: 475, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "apagado", english: "dim", isEssential: false },
+            { id: 476, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "recto", english: "straight", isEssential: false },
+            { id: 477, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "torcido", english: "crooked", isEssential: false },
+            { id: 478, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "plano", english: "flat", isEssential: false },
+            { id: 479, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "redondo", english: "round", isEssential: false },
+            { id: 480, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "cuadrado", english: "square", isEssential: false },
+            { id: 481, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "igual", english: "same/equal", isEssential: false },
+            { id: 482, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "diferente", english: "different", isEssential: false },
+            { id: 483, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "cierto", english: "certain/true", isEssential: false },
+            { id: 484, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "falso", english: "false", isEssential: false },
+            { id: 485, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "correcto", english: "correct", isEssential: false },
+            { id: 486, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "incorrecto", english: "incorrect", isEssential: false },
+            { id: 487, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "completo", english: "complete", isEssential: false },
+            { id: 488, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "incompleto", english: "incomplete", isEssential: false },
+            { id: 489, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "importante", english: "important", isEssential: false },
+            { id: 490, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "necesario", english: "necessary", isEssential: false },
+            { id: 491, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "útil", english: "useful", isEssential: false },
+            { id: 492, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "inútil", english: "useless", isEssential: false },
+            { id: 493, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "interesante", english: "interesting", isEssential: false },
+            { id: 494, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "aburrido", english: "boring", isEssential: false },
+            { id: 495, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "divertido", english: "fun", isEssential: false },
+            { id: 496, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "serio", english: "serious", isEssential: false },
+            { id: 497, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "seguro", english: "safe/sure", isEssential: false },
+            { id: 498, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "peligroso", english: "dangerous", isEssential: false },
+            { id: 499, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "público", english: "public", isEssential: false },
+            { id: 500, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "privado", english: "private", isEssential: false },
+            { id: 501, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "especial", english: "special", isEssential: false },
+            { id: 502, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "normal", english: "normal", isEssential: false },
+            { id: 503, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "extraño", english: "strange", isEssential: false },
+            { id: 504, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "familiar", english: "familiar", isEssential: false },
+            { id: 505, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "único", english: "unique", isEssential: false },
+            { id: 506, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "común", english: "common", isEssential: false },
+            { id: 507, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "general", english: "general", isEssential: false },
+            { id: 508, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "específico", english: "specific", isEssential: false },
+            { id: 509, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "universal", english: "universal", isEssential: false },
+            { id: 510, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "local", english: "local", isEssential: false },
+            { id: 511, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "nacional", english: "national", isEssential: false },
+            { id: 512, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "internacional", english: "international", isEssential: false },
+            { id: 513, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "real", english: "real", isEssential: false },
+            { id: 515, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "natural", english: "natural", isEssential: false },
+            { id: 516, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "artificial", english: "artificial", isEssential: false },
+            { id: 517, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "físico", english: "physical", isEssential: false },
+            { id: 518, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "mental", english: "mental", isEssential: false },
+            { id: 519, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "listo", english: "ready/clever", isEssential: false },
+            { id: 520, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "preparado", english: "prepared", isEssential: false },
+            { id: 521, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "ocupado", english: "busy", isEssential: false },
+            { id: 522, category: "ADJECTIVES", subCategory: "Descriptions", spanish: "libre", english: "free", isEssential: false },
+            { id: 523, category: "ADJECTIVES", subCategory: "Colors", spanish: "blanco", english: "white", isEssential: false },
+            { id: 524, category: "ADJECTIVES", subCategory: "Colors", spanish: "negro", english: "black", isEssential: false },
+            { id: 525, category: "ADJECTIVES", subCategory: "Colors", spanish: "gris", english: "gray", isEssential: false },
+            { id: 526, category: "ADJECTIVES", subCategory: "Colors", spanish: "rojo", english: "red", isEssential: false },
+            { id: 527, category: "ADJECTIVES", subCategory: "Colors", spanish: "azul", english: "blue", isEssential: false },
+            { id: 528, category: "ADJECTIVES", subCategory: "Colors", spanish: "verde", english: "green", isEssential: false },
+            { id: 529, category: "ADJECTIVES", subCategory: "Colors", spanish: "amarillo", english: "yellow", isEssential: false },
+            { id: 530, category: "ADJECTIVES", subCategory: "Colors", spanish: "naranja", english: "orange", isEssential: false },
+            { id: 531, category: "ADJECTIVES", subCategory: "Colors", spanish: "rosa", english: "pink", isEssential: false },
+            { id: 532, category: "ADJECTIVES", subCategory: "Colors", spanish: "morado", english: "purple", isEssential: false },
+            { id: 533, category: "ADJECTIVES", subCategory: "Colors", spanish: "marrón", english: "brown", isEssential: false },
+            { id: 534, category: "ADJECTIVES", subCategory: "Colors", spanish: "dorado", english: "golden", isEssential: false },
+            { id: 535, category: "ADJECTIVES", subCategory: "Colors", spanish: "plateado", english: "silver", isEssential: false },
+            { id: 536, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "feliz", english: "happy", isEssential: false },
+            { id: 537, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "triste", english: "sad", isEssential: false },
+            { id: 538, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "enojado", english: "angry", isEssential: false },
+            { id: 539, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "cansado", english: "tired", isEssential: false },
+            { id: 540, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "sorprendido", english: "surprised", isEssential: false },
+            { id: 541, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "asustado", english: "scared", isEssential: false },
+            { id: 542, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "nervioso", english: "nervous", isEssential: false },
+            { id: 543, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "tranquilo", english: "calm", isEssential: false },
+            { id: 544, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "ansioso", english: "anxious", isEssential: false },
+            { id: 545, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "orgulloso", english: "proud", isEssential: false },
+            { id: 546, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "avergonzado", english: "embarrassed", isEssential: false },
+            { id: 547, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "confundido", english: "confused", isEssential: false },
+            { id: 549, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "emocionado", english: "excited", isEssential: false },
+            { id: 550, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "satisfecho", english: "satisfied", isEssential: false },
+            { id: 551, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "hambriento", english: "hungry", isEssential: false },
+            { id: 552, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "sediento", english: "thirsty", isEssential: false },
+            { id: 553, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "enfermo", english: "sick", isEssential: false },
+            { id: 554, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "sano", english: "healthy", isEssential: false },
+            { id: 555, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "vivo", english: "alive", isEssential: false },
+            { id: 556, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "muerto", english: "dead", isEssential: false },
+            { id: 557, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "dormido", english: "asleep", isEssential: false },
+            { id: 558, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "despierto", english: "awake", isEssential: false },
+            { id: 559, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "atento", english: "attentive", isEssential: false },
+            { id: 560, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "distraído", english: "distracted", isEssential: false },
+            { id: 561, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "solo", english: "alone", isEssential: false },
+            { id: 562, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "casado", english: "married", isEssential: false },
+            { id: 563, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "soltero", english: "single", isEssential: false },
+            { id: 564, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "amable", english: "kind", isEssential: false },
+            { id: 565, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "grosero", english: "rude", isEssential: false },
+            { id: 566, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "honesto", english: "honest", isEssential: false },
+            { id: 567, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "deshonesto", english: "dishonest", isEssential: false },
+            { id: 568, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "sincero", english: "sincere", isEssential: false },
+            { id: 569, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "generoso", english: "generous", isEssential: false },
+            { id: 570, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "egoísta", english: "selfish", isEssential: false },
+            { id: 571, category: "ADJECTIVES", subCategory: "Qualities & Feelings", spanish: "paciente", english: "patient", isEssential: false },
+            { id: 572, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "mal", english: "badly", isEssential: false },
+            { id: 573, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "rápidamente", english: "quickly", isEssential: false },
+            { id: 574, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "lentamente", english: "slowly", isEssential: false },
+            { id: 575, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "fácilmente", english: "easily", isEssential: false },
+            { id: 576, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "difícilmente", english: "with difficulty", isEssential: false },
+            { id: 577, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "completamente", english: "completely", isEssential: false },
+            { id: 578, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "parcialmente", english: "partially", isEssential: false },
+            { id: 579, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "especialmente", english: "especially", isEssential: false },
+            { id: 580, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "exactamente", english: "exactly", isEssential: false },
+            { id: 581, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "simplemente", english: "simply", isEssential: false },
+            { id: 582, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "realmente", english: "really", isEssential: false },
+            { id: 583, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "solamente", english: "only", isEssential: false },
+            { id: 584, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "juntos", english: "together", isEssential: false },
+            { id: 586, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "así", english: "like this", isEssential: false },
+            { id: 587, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "aún", english: "still/yet", isEssential: false },
+            { id: 588, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "ya", english: "already", isEssential: false },
+            { id: 589, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "todavía", english: "still", isEssential: false },
+            { id: 590, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "casi", english: "almost", isEssential: false },
+            { id: 591, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "quizás", english: "perhaps", isEssential: false },
+            { id: 592, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "probablemente", english: "probably", isEssential: false },
+            { id: 593, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "posiblemente", english: "possibly", isEssential: false },
+            { id: 594, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "definitivamente", english: "definitely", isEssential: false },
+            { id: 595, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "obviamente", english: "obviously", isEssential: false },
+            { id: 596, category: "ADVERBS & EXPRESSIONS", subCategory: "Manner", spanish: "generalmente", english: "generally", isEssential: false },
+            { id: 597, category: "ADVERBS & EXPRESSIONS", subCategory: "Frequency", spanish: "siempre", english: "always", isEssential: false },
+            { id: 598, category: "ADVERBS & EXPRESSIONS", subCategory: "Frequency", spanish: "normalmente", english: "normally", isEssential: false },
+            { id: 599, category: "ADVERBS & EXPRESSIONS", subCategory: "Frequency", spanish: "usualmente", english: "usually", isEssential: false },
+            { id: 600, category: "ADVERBS & EXPRESSIONS", subCategory: "Frequency", spanish: "frecuentemente", english: "frequently", isEssential: false },
+            { id: 601, category: "ADVERBS & EXPRESSIONS", subCategory: "Frequency", spanish: "a menudo", english: "often", isEssential: false },
+            { id: 602, category: "ADVERBS & EXPRESSIONS", subCategory: "Frequency", spanish: "a veces", english: "sometimes", isEssential: false },
+            { id: 603, category: "ADVERBS & EXPRESSIONS", subCategory: "Frequency", spanish: "raramente", english: "rarely", isEssential: false },
+            { id: 604, category: "ADVERBS & EXPRESSIONS", subCategory: "Frequency", spanish: "nunca", english: "never", isEssential: false },
+            { id: 605, category: "ADVERBS & EXPRESSIONS", subCategory: "Frequency", spanish: "jamás", english: "never ever", isEssential: false },
+            { id: 606, category: "ADVERBS & EXPRESSIONS", subCategory: "Frequency", spanish: "de nuevo", english: "again", isEssential: false },
+            { id: 607, category: "ADVERBS & EXPRESSIONS", subCategory: "Frequency", spanish: "otra vez", english: "again", isEssential: false },
+            { id: 608, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "después", english: "after", isEssential: false },
+            { id: 609, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "antes", english: "before", isEssential: false },
+            { id: 610, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "luego", english: "then/later", isEssential: false },
+            { id: 611, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "pronto", english: "soon", isEssential: false },
+            { id: 612, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "tarde", english: "late", isEssential: false },
+            { id: 613, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "temprano", english: "early", isEssential: false },
+            { id: 617, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "anoche", english: "last night", isEssential: false },
+            { id: 618, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "anteayer", english: "day before yesterday", isEssential: false },
+            { id: 619, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "pasado mañana", english: "day after tomorrow", isEssential: false },
+            { id: 620, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "mientras", english: "while", isEssential: false },
+            { id: 621, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "durante", english: "during", isEssential: false },
+            { id: 622, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "desde", english: "since/from", isEssential: false },
+            { id: 623, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "hasta", english: "until", isEssential: false },
+            { id: 626, category: "ADVERBS & EXPRESSIONS", subCategory: "Time", spanish: "finalmente", english: "finally", isEssential: false },
+            { id: 627, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "aquí", english: "here", isEssential: false },
+            { id: 628, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "allí", english: "there", isEssential: false },
+            { id: 629, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "allá", english: "over there", isEssential: false },
+            { id: 630, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "cerca", english: "near", isEssential: false },
+            { id: 631, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "lejos", english: "far", isEssential: false },
+            { id: 632, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "dentro", english: "inside", isEssential: false },
+            { id: 633, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "fuera", english: "outside", isEssential: false },
+            { id: 634, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "arriba", english: "above/up", isEssential: false },
+            { id: 635, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "abajo", english: "below/down", isEssential: false },
+            { id: 636, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "adelante", english: "ahead", isEssential: false },
+            { id: 637, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "atrás", english: "behind", isEssential: false },
+            { id: 638, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "enfrente", english: "in front", isEssential: false },
+            { id: 639, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "detrás", english: "behind", isEssential: false },
+            { id: 640, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "al lado", english: "next to", isEssential: false },
+            { id: 641, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "encima", english: "on top", isEssential: false },
+            { id: 642, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "debajo", english: "underneath", isEssential: false },
+            { id: 643, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "alrededor", english: "around", isEssential: false },
+            { id: 644, category: "ADVERBS & EXPRESSIONS", subCategory: "Place", spanish: "en todas partes", english: "everywhere", isEssential: false },
+            { id: 645, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "mucho", english: "a lot", isEssential: false },
+            { id: 646, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "poco", english: "little/few", isEssential: false },
+            { id: 647, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "bastante", english: "quite/enough", isEssential: false },
+            { id: 648, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "demasiado", english: "too much", isEssential: false },
+            { id: 649, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "suficiente", english: "enough", isEssential: false },
+            { id: 650, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "más", english: "more", isEssential: false },
+            { id: 651, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "menos", english: "less", isEssential: false },
+            { id: 652, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "muy", english: "very", isEssential: false },
+            { id: 653, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "tan", english: "so", isEssential: false },
+            { id: 654, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "tanto", english: "so much", isEssential: false },
+            { id: 655, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "todo", english: "everything", isEssential: false },
+            { id: 656, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "nada", english: "nothing", isEssential: false },
+            { id: 657, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "algo", english: "something", isEssential: false },
+            { id: 658, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "alguien", english: "someone", isEssential: false },
+            { id: 659, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "nadie", english: "nobody", isEssential: false },
+            { id: 660, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "cada", english: "each", isEssential: false },
+            { id: 661, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "varios", english: "several", isEssential: false },
+            { id: 662, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "algunos", english: "some", isEssential: false },
+            { id: 663, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "todos", english: "all", isEssential: false },
+            { id: 664, category: "ADVERBS & EXPRESSIONS", subCategory: "Quantity", spanish: "ninguno", english: "none", isEssential: false },
+            { id: 665, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "y", english: "and", isEssential: false },
+            { id: 666, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "o", english: "or", isEssential: false },
+            { id: 667, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "pero", english: "but", isEssential: false },
+            { id: 668, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "sin embargo", english: "however", isEssential: false },
+            { id: 669, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "aunque", english: "although", isEssential: false },
+            { id: 670, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "porque", english: "because", isEssential: false },
+            { id: 671, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "por eso", english: "therefore", isEssential: false },
+            { id: 672, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "así que", english: "so", isEssential: false },
+            { id: 673, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "entonces", english: "then", isEssential: false },
+            { id: 674, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "mientras que", english: "while", isEssential: false },
+            { id: 675, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "como", english: "as/like", isEssential: false },
+            { id: 676, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "si", english: "if", isEssential: false },
+            { id: 677, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "cuando", english: "when", isEssential: false },
+            { id: 679, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "ni", english: "neither/nor", isEssential: false },
+            { id: 680, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "ya que", english: "since", isEssential: false },
+            { id: 681, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "pues", english: "well/then", isEssential: false },
+            { id: 682, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "además", english: "furthermore", isEssential: false },
+            { id: 683, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "también", english: "also", isEssential: false },
+            { id: 684, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "tampoco", english: "neither", isEssential: false },
+            { id: 685, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "o sea", english: "that is", isEssential: false },
+            { id: 686, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "es decir", english: "that is to say", isEssential: false },
+            { id: 687, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "por ejemplo", english: "for example", isEssential: false },
+            { id: 688, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "por lo tanto", english: "therefore", isEssential: false },
+            { id: 690, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "en cambio", english: "on the other hand", isEssential: false },
+            { id: 691, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "de hecho", english: "in fact", isEssential: false },
+            { id: 692, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "a pesar de", english: "despite", isEssential: false },
+            { id: 693, category: "CONNECTORS & PREPOSITIONS", subCategory: "Connectors", spanish: "en realidad", english: "actually", isEssential: false },
+            { id: 694, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "a", english: "to", isEssential: false },
+            { id: 695, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "de", english: "of/from", isEssential: false },
+            { id: 696, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "en", english: "in", isEssential: false },
+            { id: 697, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "con", english: "with", isEssential: false },
+            { id: 698, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "sin", english: "without", isEssential: false },
+            { id: 699, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "por", english: "for/by", isEssential: false },
+            { id: 700, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "para", english: "for/in order to", isEssential: false },
+            { id: 701, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "sobre", english: "on/about", isEssential: false },
+            { id: 702, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "bajo", english: "under", isEssential: false },
+            { id: 703, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "tras", english: "after/behind", isEssential: false },
+            { id: 704, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "entre", english: "between", isEssential: false },
+            { id: 707, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "contra", english: "against", isEssential: false },
+            { id: 708, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "según", english: "according to", isEssential: false },
+            { id: 709, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "hacia", english: "toward", isEssential: false },
+            { id: 710, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "mediante", english: "by means of", isEssential: false },
+            { id: 712, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "excepto", english: "except", isEssential: false },
+            { id: 713, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "salvo", english: "except", isEssential: false },
+            { id: 714, category: "CONNECTORS & PREPOSITIONS", subCategory: "Prepositions", spanish: "ante", english: "before (position)", isEssential: false },
+            { id: 716, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "¿Cómo estás?", english: "How are you?", isEssential: false },
+            { id: 717, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Estoy bien", english: "I'm fine", isEssential: false },
+            { id: 718, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Mucho gusto", english: "Nice to meet you", isEssential: false },
+            { id: 719, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Encantado/a", english: "Delighted (to meet you)", isEssential: false },
+            { id: 720, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "¿Qué tal?", english: "How's it going?", isEssential: false },
+            { id: 721, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "¿Qué pasa?", english: "What's happening?", isEssential: false },
+            { id: 722, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "¿De dónde eres?", english: "Where are you from?", isEssential: false },
+            { id: 723, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Soy de...", english: "I'm from...", isEssential: false },
+            { id: 724, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "¿A qué te dedicas?", english: "What do you do?", isEssential: false },
+            { id: 725, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "¿Cuántos años tienes?", english: "How old are you?", isEssential: false },
+            { id: 726, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Tengo ... años", english: "I am ... years old", isEssential: false },
+            { id: 727, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "¿Hablas inglés?", english: "Do you speak English?", isEssential: false },
+            { id: 728, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Hablo un poco", english: "I speak a little", isEssential: false },
+            { id: 729, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "No entiendo", english: "I don't understand", isEssential: false },
+            { id: 730, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "¿Puedes repetir?", english: "Can you repeat?", isEssential: false },
+            { id: 731, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "¿Cómo se dice...?", english: "How do you say...?", isEssential: false },
+            { id: 732, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "¿Qué significa...?", english: "What does... mean?", isEssential: false },
+            { id: 733, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "¿Me puedes ayudar?", english: "Can you help me?", isEssential: false },
+            { id: 734, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Por supuesto", english: "Of course", isEssential: false },
+            { id: 735, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Con permiso", english: "Excuse me", isEssential: false },
+            { id: 736, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "No hay problema", english: "No problem", isEssential: false },
+            { id: 737, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "No importa", english: "It doesn't matter", isEssential: false },
+            { id: 738, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Está bien", english: "It's okay", isEssential: false },
+            { id: 740, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Te quiero", english: "I love you", isEssential: false },
+            { id: 741, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Te extraño", english: "I miss you", isEssential: false },
+            { id: 742, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Felicidades", english: "Congratulations", isEssential: false },
+            { id: 743, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Feliz cumpleaños", english: "Happy birthday", isEssential: false },
+            { id: 745, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Buen provecho", english: "Enjoy your meal", isEssential: false },
+            { id: 746, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Buena suerte", english: "Good luck", isEssential: false },
+            { id: 747, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Que te vaya bien", english: "Have a good one", isEssential: false },
+            { id: 748, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Hasta luego", english: "See you later", isEssential: false },
+            { id: 749, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Hasta mañana", english: "See you tomorrow", isEssential: false },
+            { id: 750, category: "USEFUL PHRASES & IDIOMS", subCategory: "Social Interaction", spanish: "Nos vemos", english: "See you", isEssential: false },
+            { id: 751, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "¿Cuánto cuesta?", english: "How much does it cost?", isEssential: false },
+            { id: 752, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Es muy caro", english: "It's very expensive", isEssential: false },
+            { id: 753, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "¿Aceptan tarjetas?", english: "Do you accept cards?", isEssential: false },
+            { id: 754, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "La cuenta, por favor", english: "The bill, please", isEssential: false },
+            { id: 755, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "¿Dónde está el baño?", english: "Where is the bathroom?", isEssential: false },
+            { id: 756, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Estoy perdido/a", english: "I am lost", isEssential: false },
+            { id: 757, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "¿Hay wifi?", english: "Is there wifi?", isEssential: false },
+            { id: 758, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "¿A qué hora?", english: "At what time?", isEssential: false },
+            { id: 759, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "¿Está abierto?", english: "Is it open?", isEssential: false },
+            { id: 760, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "¿Está cerrado?", english: "Is it closed?", isEssential: false },
+            { id: 761, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "¿Puedo entrar?", english: "May I come in?", isEssential: false },
+            { id: 762, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Quisiera...", english: "I would like...", isEssential: false },
+            { id: 763, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Necesito...", english: "I need...", isEssential: false },
+            { id: 764, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Me gusta", english: "I like", isEssential: false },
+            { id: 765, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "No me gusta", english: "I don't like", isEssential: false },
+            { id: 766, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Me encanta", english: "I love it", isEssential: false },
+            { id: 767, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Odio...", english: "I hate...", isEssential: false },
+            { id: 768, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Tengo hambre", english: "I'm hungry", isEssential: false },
+            { id: 769, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Tengo sed", english: "I'm thirsty", isEssential: false },
+            { id: 770, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Tengo sueño", english: "I'm sleepy", isEssential: false },
+            { id: 771, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Tengo prisa", english: "I'm in a hurry", isEssential: false },
+            { id: 772, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Tengo calor", english: "I'm hot", isEssential: false },
+            { id: 773, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Tengo frío", english: "I'm cold", isEssential: false },
+            { id: 774, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Me duele...", english: "My... hurts", isEssential: false },
+            { id: 775, category: "USEFUL PHRASES & IDIOMS", subCategory: "Practical Phrases", spanish: "Estoy enfermo/a", english: "I'm sick", isEssential: false },
+            { id: 776, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "Vale", english: "Okay", isEssential: false },
+            { id: 777, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "Claro", english: "Of course", isEssential: false },
+            { id: 778, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "Tal vez", english: "Maybe", isEssential: false },
+            { id: 779, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "A lo mejor", english: "Perhaps", isEssential: false },
+            { id: 780, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "De acuerdo", english: "Agreed", isEssential: false },
+            { id: 781, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "En seguida", english: "Right away", isEssential: false },
+            { id: 782, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "Poco a poco", english: "Little by little", isEssential: false },
+            { id: 783, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "Más o menos", english: "More or less", isEssential: false },
+            { id: 784, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "De vez en cuando", english: "From time to time", isEssential: false },
+            { id: 786, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "Gracias a", english: "Thanks to", isEssential: false },
+            { id: 788, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "Sobre todo", english: "Above all", isEssential: false },
+            { id: 789, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "Por lo menos", english: "At least", isEssential: false },
+            { id: 790, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "Al final", english: "In the end", isEssential: false },
+            { id: 791, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "En general", english: "In general", isEssential: false },
+            { id: 792, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "Es igual", english: "It's the same", isEssential: false },
+            { id: 793, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Qué pena!", english: "What a shame!", isEssential: false },
+            { id: 794, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Qué lástima!", english: "What a pity!", isEssential: false },
+            { id: 795, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Qué bueno!", english: "How nice!", isEssential: false },
+            { id: 796, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Qué bien!", english: "How great!", isEssential: false },
+            { id: 797, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Qué mal!", english: "How bad!", isEssential: false },
+            { id: 798, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Qué bonito!", english: "How pretty!", isEssential: false },
+            { id: 799, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Vamos!", english: "Let's go!", isEssential: false },
+            { id: 800, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Claro que sí!", english: "Of course!", isEssential: false },
+            { id: 802, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Ni hablar!", english: "No way!", isEssential: false },
+            { id: 803, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Ojalá!", english: "I hope so!", isEssential: false },
+            { id: 804, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡En serio!", english: "Seriously!", isEssential: false },
+            { id: 805, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡No me digas!", english: "You don't say!", isEssential: false },
+            { id: 806, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "Estoy de acuerdo", english: "I agree", isEssential: false },
+            { id: 807, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "No estoy de acuerdo", english: "I disagree", isEssential: false },
+            { id: 808, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "No lo creo", english: "I don't believe it", isEssential: false },
+            { id: 809, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Qué va!", english: "No way!", isEssential: false },
+            { id: 810, category: "USEFUL PHRASES & IDIOMS", subCategory: "Useful Expressions", spanish: "¡Vaya!", english: "Wow!", isEssential: false },
+            { id: 811, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "viaje", english: "trip", isEssential: false },
+            { id: 812, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "vuelo", english: "flight", isEssential: false },
+            { id: 813, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "reservación", english: "reservation", isEssential: false },
+            { id: 814, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "pasaporte", english: "passport", isEssential: false },
+            { id: 816, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "maleta", english: "suitcase", isEssential: false },
+            { id: 817, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "turista", english: "tourist", isEssential: false },
+            { id: 818, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "vacaciones", english: "vacation", isEssential: false },
+            { id: 819, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "alojamiento", english: "accommodation", isEssential: false },
+            { id: 820, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "recepción", english: "reception", isEssential: false },
+            { id: 821, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "facturar", english: "to check in", isEssential: false },
+            { id: 822, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "salida", english: "departure/exit", isEssential: false },
+            { id: 823, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "llegada", english: "arrival", isEssential: false },
+            { id: 824, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "retraso", english: "delay", isEssential: false },
+            { id: 825, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "cancelación", english: "cancellation", isEssential: false },
+            { id: 826, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "terminal", english: "terminal", isEssential: false },
+            { id: 827, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "aduana", english: "customs", isEssential: false },
+            { id: 828, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "visa", english: "visa", isEssential: false },
+            { id: 829, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "destino", english: "destination", isEssential: false },
+            { id: 830, category: "SPECIALIZED VOCABULARY", subCategory: "Travel", spanish: "extranjero", english: "foreigner/abroad", isEssential: false },
+            { id: 831, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "trabajo", english: "work/job", isEssential: false },
+            { id: 832, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "empleo", english: "employment", isEssential: false },
+            { id: 833, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "empresa", english: "company", isEssential: false },
+            { id: 835, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "reunión", english: "meeting", isEssential: false },
+            { id: 836, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "negocio", english: "business", isEssential: false },
+            { id: 837, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "proyecto", english: "project", isEssential: false },
+            { id: 838, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "informe", english: "report", isEssential: false },
+            { id: 840, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "equipo", english: "team", isEssential: false },
+            { id: 841, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "salario", english: "salary", isEssential: false },
+            { id: 843, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "estudio", english: "study", isEssential: false },
+            { id: 844, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "clase", english: "class", isEssential: false },
+            { id: 845, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "curso", english: "course", isEssential: false },
+            { id: 846, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "examen", english: "exam", isEssential: false },
+            { id: 847, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "tarea", english: "homework", isEssential: false },
+            { id: 848, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "nota", english: "grade", isEssential: false },
+            { id: 849, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "grado", english: "degree", isEssential: false },
+            { id: 850, category: "SPECIALIZED VOCABULARY", subCategory: "Work & Study", spanish: "título", english: "degree/title", isEssential: false },
+            { id: 852, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "internet", english: "internet", isEssential: false },
+            { id: 853, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "red", english: "network", isEssential: false },
+            { id: 854, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "sitio web", english: "website", isEssential: false },
+            { id: 855, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "enlace", english: "link", isEssential: false },
+            { id: 856, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "correo electrónico", english: "email", isEssential: false },
+            { id: 857, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "contraseña", english: "password", isEssential: false },
+            { id: 858, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "usuario", english: "user", isEssential: false },
+            { id: 859, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "aplicación", english: "application", isEssential: false },
+            { id: 860, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "descargar", english: "to download", isEssential: false },
+            { id: 861, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "subir", english: "to upload", isEssential: false },
+            { id: 862, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "pantalla", english: "screen", isEssential: false },
+            { id: 863, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "teclado", english: "keyboard", isEssential: false },
+            { id: 864, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "ratón", english: "mouse", isEssential: false },
+            { id: 865, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "archivo", english: "file", isEssential: false },
+            { id: 866, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "programa", english: "program", isEssential: false },
+            { id: 867, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "datos", english: "data", isEssential: false },
+            { id: 868, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "mensaje", english: "message", isEssential: false },
+            { id: 869, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "batería", english: "battery", isEssential: false },
+            { id: 870, category: "SPECIALIZED VOCABULARY", subCategory: "Technology", spanish: "cargar", english: "to charge", isEssential: false },
+            { id: 871, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "emergencia", english: "emergency", isEssential: false },
+            { id: 872, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "ayuda", english: "help", isEssential: false },
+            { id: 873, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "policía", english: "police", isEssential: false },
+            { id: 874, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "ambulancia", english: "ambulance", isEssential: false },
+            { id: 875, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "bomberos", english: "firefighters", isEssential: false },
+            { id: 876, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "accidente", english: "accident", isEssential: false },
+            { id: 877, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "herida", english: "injury", isEssential: false },
+            { id: 881, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "farmacia", english: "pharmacy", isEssential: false },
+            { id: 882, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "medicamento", english: "medication", isEssential: false },
+            { id: 883, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "receta", english: "prescription", isEssential: false },
+            { id: 884, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "seguro", english: "insurance", isEssential: false },
+            { id: 885, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "alergia", english: "allergy", isEssential: false },
+            { id: 886, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "fiebre", english: "fever", isEssential: false },
+            { id: 887, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "tos", english: "cough", isEssential: false },
+            { id: 888, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "resfriado", english: "cold (illness)", isEssential: false },
+            { id: 889, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "gripe", english: "flu", isEssential: false },
+            { id: 890, category: "SPECIALIZED VOCABULARY", subCategory: "Health & Emergency", spanish: "vacuna", english: "vaccine", isEssential: false },
+            { id: 891, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "naturaleza", english: "nature", isEssential: false },
+            { id: 892, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "animal", english: "animal", isEssential: false },
+            { id: 893, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "planta", english: "plant", isEssential: false },
+            { id: 894, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "árbol", english: "tree", isEssential: false },
+            { id: 895, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "flor", english: "flower", isEssential: false },
+            { id: 896, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "aire", english: "air", isEssential: false },
+            { id: 898, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "tierra", english: "earth", isEssential: false },
+            { id: 899, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "fuego", english: "fire", isEssential: false },
+            { id: 900, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "cielo", english: "sky", isEssential: false },
+            { id: 902, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "contaminación", english: "pollution", isEssential: false },
+            { id: 903, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "energía", english: "energy", isEssential: false },
+            { id: 904, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "basura", english: "trash", isEssential: false },
+            { id: 905, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "reciclar", english: "to recycle", isEssential: false },
+            { id: 906, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "conservar", english: "to conserve", isEssential: false },
+            { id: 907, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "proteger", english: "to protect", isEssential: false },
+            { id: 908, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "sostenible", english: "sustainable", isEssential: false },
+            { id: 909, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "orgánico", english: "organic", isEssential: false },
+            { id: 910, category: "SPECIALIZED VOCABULARY", subCategory: "Environment & Nature", spanish: "ecosistema", english: "ecosystem", isEssential: false },
+            { id: 911, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "película", english: "movie", isEssential: false },
+            { id: 912, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "música", english: "music", isEssential: false },
+            { id: 913, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "canción", english: "song", isEssential: false },
+            { id: 914, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "concierto", english: "concert", isEssential: false },
+            { id: 915, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "espectáculo", english: "show", isEssential: false },
+            { id: 916, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "arte", english: "art", isEssential: false },
+            { id: 917, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "deporte", english: "sport", isEssential: false },
+            { id: 918, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "juego", english: "game", isEssential: false },
+            { id: 920, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "competición", english: "competition", isEssential: false },
+            { id: 923, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "serie", english: "series", isEssential: false },
+            { id: 924, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "actor", english: "actor", isEssential: false },
+            { id: 925, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "actriz", english: "actress", isEssential: false },
+            { id: 926, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "director", english: "director", isEssential: false },
+            { id: 927, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "autor", english: "author", isEssential: false },
+            { id: 931, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "noticia", english: "news", isEssential: false },
+            { id: 932, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "entrevista", english: "interview", isEssential: false },
+            { id: 933, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "artículo", english: "article", isEssential: false },
+            { id: 934, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "fotografía", english: "photograph", isEssential: false },
+            { id: 935, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "redes sociales", english: "social media", isEssential: false },
+            { id: 936, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "perfil", english: "profile", isEssential: false },
+            { id: 937, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "seguidor", english: "follower", isEssential: false },
+            { id: 938, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "comentario", english: "comment", isEssential: false },
+            { id: 939, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "compartir", english: "to share", isEssential: false },
+            { id: 940, category: "SPECIALIZED VOCABULARY", subCategory: "Entertainment & Media", spanish: "publicar", english: "to post", isEssential: false },
+            { id: 943, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "cuenta", english: "account", isEssential: false },
+            { id: 944, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "tarjeta de crédito", english: "credit card", isEssential: false },
+            { id: 945, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "efectivo", english: "cash", isEssential: false },
+            { id: 946, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "préstamo", english: "loan", isEssential: false },
+            { id: 947, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "deuda", english: "debt", isEssential: false },
+            { id: 948, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "interés", english: "interest", isEssential: false },
+            { id: 949, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "impuesto", english: "tax", isEssential: false },
+            { id: 950, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "descuento", english: "discount", isEssential: false },
+            { id: 951, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "precio", english: "price", isEssential: false },
+            { id: 952, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "compras", english: "shopping", isEssential: false },
+            { id: 954, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "centro comercial", english: "shopping mall", isEssential: false },
+            { id: 956, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "vendedor", english: "seller", isEssential: false },
+            { id: 958, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "oferta", english: "offer/sale", isEssential: false },
+            { id: 959, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "garantía", english: "warranty", isEssential: false },
+            { id: 960, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "recibo", english: "receipt", isEssential: false },
+            { id: 961, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "talla", english: "size", isEssential: false },
+            { id: 962, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "devolver", english: "to return", isEssential: false },
+            { id: 964, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "probar", english: "to try", isEssential: false },
+            { id: 965, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "elegir", english: "to choose", isEssential: false },
+            { id: 967, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "ahorrar", english: "to save", isEssential: false },
+            { id: 968, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "gastar", english: "to spend", isEssential: false },
+            { id: 969, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "invertir", english: "to invest", isEssential: false },
+            { id: 970, category: "SPECIALIZED VOCABULARY", subCategory: "Finance & Shopping", spanish: "presupuesto", english: "budget", isEssential: false },
+            { id: 971, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "problema", english: "problem", isEssential: false },
+            { id: 972, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "solución", english: "solution", isEssential: false },
+            { id: 973, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "razón", english: "reason", isEssential: false },
+            { id: 974, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "idea", english: "idea", isEssential: false },
+            { id: 975, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "opinión", english: "opinion", isEssential: false },
+            { id: 976, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "consejo", english: "advice", isEssential: false },
+            { id: 977, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "decisión", english: "decision", isEssential: false },
+            { id: 978, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "opción", english: "option", isEssential: false },
+            { id: 979, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "cambio", english: "change", isEssential: false },
+            { id: 980, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "resultado", english: "result", isEssential: false },
+            { id: 981, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "ejemplo", english: "example", isEssential: false },
+            { id: 982, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "parte", english: "part", isEssential: false },
+            { id: 983, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "forma", english: "form/way", isEssential: false },
+            { id: 984, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "modo", english: "way/manner", isEssential: false },
+            { id: 985, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "tipo", english: "type", isEssential: false },
+            { id: 986, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "caso", english: "case", isEssential: false },
+            { id: 987, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "punto", english: "point", isEssential: false },
+            { id: 988, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "lado", english: "side", isEssential: false },
+            { id: 989, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "principio", english: "beginning", isEssential: false },
+            { id: 990, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "final", english: "end", isEssential: false },
+            { id: 991, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "orden", english: "order", isEssential: false },
+            { id: 992, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "control", english: "control", isEssential: false },
+            { id: 993, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "fuerza", english: "strength", isEssential: false },
+            { id: 994, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "poder", english: "power", isEssential: false },
+            { id: 995, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "historia", english: "history/story", isEssential: false },
+            { id: 996, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "cultura", english: "culture", isEssential: false },
+            { id: 997, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "derecho", english: "right/law", isEssential: false },
+            { id: 998, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "libertad", english: "freedom", isEssential: false },
+            { id: 999, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "paz", english: "peace", isEssential: false },
+            { id: 1000, category: "MISCELLANEOUS", subCategory: "Essentials", spanish: "amor", english: "love", isEssential: false },
+        ];
+
+        // --- DOM Elements ---
+        const quickStartBtn = document.getElementById('quick-start-btn');
+        const thirtyDayBtn = document.getElementById('thirty-day-btn');
+        const daySelectorContainer = document.getElementById('day-selector-container');
+        const daySelector = document.getElementById('day-selector');
+        const flashcardSection = document.getElementById('flashcard-section');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const listTitle = document.getElementById('list-title');
+        const flashcardEl = document.getElementById('flashcard');
+        const spanishWordEl = document.getElementById('spanish-word');
+        const englishTranslationEl = document.getElementById('english-translation');
+        const wordCategoryEl = document.getElementById('word-category');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressTextEl = document.getElementById('progress-text');
+        const progressBarEl = document.getElementById('progress-bar');
+        const completionMessageEl = document.getElementById('completion-message');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // --- State ---
+        let uniqueVocabulary = [];
+        let dailyLists = [];
+        let quickStartWords = [];
+        let currentWordList = [];
+        let currentWordIndex = 0;
+        let currentDay = -1; // -1: none, 0: quick start, 1-30: daily plan
+        let isCardFlipped = false;
+
+        // --- Functions ---
+
+        function removeDuplicatesAndReassignIds(words) {
+            const seenSpanish = new Set();
+            const uniqueWords = [];
+            words.forEach(word => {
+                const lowerCaseSpanish = word.spanish.toLowerCase();
+                if (!seenSpanish.has(lowerCaseSpanish)) {
+                    seenSpanish.add(lowerCaseSpanish);
+                    uniqueWords.push(word);
+                } else {
+                    // Optional: Log duplicates if needed for debugging
+                    // console.log(`Duplicate removed: ${word.spanish}`);
+                }
+            });
+            return uniqueWords.map((word, index) => ({ ...word, id: index + 1 }));
+        }
+
+        function createDailyLists(allWords) {
+            const wordsPerDay = Math.ceil(allWords.length / 30);
+            dailyLists = [];
+            for (let i = 0; i < 30; i++) {
+                const start = i * wordsPerDay;
+                const end = start + wordsPerDay;
+                dailyLists.push(allWords.slice(start, end));
+            }
+        }
+
+        function prepareQuickStartList(allWords) {
+             const essentialWords = allWords.filter(word => word.isEssential);
+             quickStartWords = essentialWords;
+             if (quickStartWords.length < 100) {
+                 const needed = 100 - quickStartWords.length;
+                 const additionalWords = allWords.filter(word => !word.isEssential).slice(0, needed);
+                 quickStartWords = [...quickStartWords, ...additionalWords];
+             } else if (quickStartWords.length > 100) {
+                 quickStartWords = quickStartWords.slice(0, 100);
+             }
+        }
+
+        function populateDaySelector() {
+            daySelector.innerHTML = '';
+            for (let i = 1; i <= 30; i++) {
+                const button = document.createElement('button');
+                button.textContent = `${i}`;
+                button.dataset.day = i;
+                // More compact styling for day buttons
+                button.className = `day-btn flex-shrink-0 border border-indigo-300 text-indigo-600 hover:bg-indigo-100 w-10 h-10 rounded-md text-sm transition duration-200 flex items-center justify-center font-semibold`;
+                button.addEventListener('click', () => {
+                    startFlashcardSession(dailyLists[i - 1], `30-Day Plan - Day ${i}`);
+                    setActiveDayButton(i);
+                    currentDay = i;
+                });
+                daySelector.appendChild(button);
+            }
+        }
+
+        function setActiveDayButton(dayNumber) {
+            const buttons = daySelector.querySelectorAll('.day-btn');
+            buttons.forEach(btn => {
+                if (parseInt(btn.dataset.day) === dayNumber) {
+                    btn.classList.add('bg-indigo-500', 'text-white', 'border-indigo-500');
+                    btn.classList.remove('hover:bg-indigo-100', 'text-indigo-600');
+                } else {
+                    btn.classList.remove('bg-indigo-500', 'text-white', 'border-indigo-500');
+                    btn.classList.add('hover:bg-indigo-100', 'text-indigo-600');
+                }
+            });
+        }
+
+        function clearActiveDayButton() {
+            const buttons = daySelector.querySelectorAll('.day-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-indigo-500', 'text-white', 'border-indigo-500');
+                btn.classList.add('hover:bg-indigo-100', 'text-indigo-600');
+            });
+        }
+
+        function startFlashcardSession(words, title) {
+            currentWordList = words;
+            currentWordIndex = 0;
+            isCardFlipped = false;
+            listTitle.textContent = title;
+
+            if (!currentWordList || currentWordList.length === 0) {
+                // Handle empty list case - maybe show a message
+                flashcardSection.classList.add('hidden');
+                welcomeMessage.classList.remove('hidden');
+                welcomeMessage.innerHTML = `
+                     <i class="fas fa-box-open text-6xl text-gray-400 mb-4"></i>
+                     <h2 class="text-2xl font-bold text-indigo-700 mb-2">Oops!</h2>
+                     <p class="text-gray-600">No words found for this selection.</p>`;
+                return;
+            }
+
+            flashcardSection.classList.remove('hidden');
+            welcomeMessage.classList.add('hidden');
+            completionMessageEl.classList.add('hidden'); // Hide completion message
+            flashcardEl.classList.remove('hidden'); // Show card
+            prevBtn.parentElement.classList.remove('hidden'); // Show nav controls
+            progressBarEl.parentElement.classList.remove('hidden'); // Show progress bar container
+
+            updateFlashcard();
+            updateProgress();
+        }
+
+        function updateFlashcard() {
+            if (currentWordIndex >= currentWordList.length) {
+                showCompletion();
+                return; // Exit if list is complete
+            }
+
+            const word = currentWordList[currentWordIndex];
+            spanishWordEl.textContent = word.spanish;
+            englishTranslationEl.textContent = word.english;
+            wordCategoryEl.textContent = word.subCategory || word.category;
+
+            // Reset flip state
+            if (isCardFlipped) {
+                flashcardEl.classList.remove('flipped');
+                isCardFlipped = false;
+            }
+
+             // Animate card transition (optional subtle effect)
+             flashcardEl.classList.remove('animate__fadeIn');
+             void flashcardEl.offsetWidth; // Trigger reflow
+             flashcardEl.classList.add('animate__animated', 'animate__fadeIn', 'animate__faster');
+
+        }
+
+        function updateProgress() {
+             if (!currentWordList || currentWordList.length === 0) return;
+
+             const currentNum = currentWordIndex + 1;
+             const totalNum = currentWordList.length;
+             progressTextEl.textContent = `Word ${currentNum} / ${totalNum}`;
+             const percentage = totalNum > 0 ? (currentNum / totalNum) * 100 : 0;
+             progressBarEl.style.width = `${percentage}%`;
+
+             // Enable/disable buttons
+             prevBtn.disabled = currentWordIndex === 0;
+             nextBtn.disabled = currentWordIndex === totalNum - 1; // Disable next only on the last card BEFORE completion shows
+        }
+
+        function flipCard() {
+            if (currentWordIndex < currentWordList.length) { // Only allow flip if not on completion screen
+                 isCardFlipped = !isCardFlipped;
+                 flashcardEl.classList.toggle('flipped');
+            }
+        }
+
+        function nextWord() {
+            if (currentWordIndex < currentWordList.length - 1) {
+                currentWordIndex++;
+                updateFlashcard();
+                updateProgress();
+            } else if (currentWordIndex === currentWordList.length - 1) {
+                 // Handle reaching the end - show completion AFTER the last card is processed
+                 currentWordIndex++; // Move index past the end
+                 updateProgress(); // Update progress to show 100%
+                 showCompletion();
+            }
+        }
+
+        function prevWord() {
+            if (currentWordIndex > 0) {
+                // If coming back from completion message, hide it
+                if (completionMessageEl && !completionMessageEl.classList.contains('hidden')) {
+                     completionMessageEl.classList.add('hidden');
+                     flashcardEl.classList.remove('hidden');
+                     prevBtn.parentElement.classList.remove('hidden');
+                     progressBarEl.parentElement.classList.remove('hidden');
+                }
+                currentWordIndex--;
+                updateFlashcard();
+                updateProgress();
+            }
+        }
+
+         function showCompletion() {
+             flashcardEl.classList.add('hidden'); // Hide card
+             prevBtn.parentElement.classList.add('hidden'); // Hide nav controls
+             progressBarEl.parentElement.classList.add('hidden'); // Hide progress bar container
+             completionMessageEl.classList.remove('hidden');
+             completionMessageEl.classList.remove('animate__fadeOutDown');
+             completionMessageEl.classList.add('animate__fadeInUp');
+             // Ensure progress shows completed state
+             progressTextEl.textContent = `Completed ${currentWordList.length} / ${currentWordList.length}`;
+             progressBarEl.style.width = `100%`;
+         }
+
+        function restartSession() {
+             startFlashcardSession(currentWordList, listTitle.textContent); // Restart with the same list and title
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            uniqueVocabulary = removeDuplicatesAndReassignIds(vocabulary);
+            console.log(`Total unique words loaded: ${uniqueVocabulary.length}`);
+
+            prepareQuickStartList(uniqueVocabulary);
+            createDailyLists(uniqueVocabulary);
+            populateDaySelector();
+
+            // --- Event Listeners ---
+            quickStartBtn.addEventListener('click', () => {
+                startFlashcardSession(quickStartWords, 'Quick Start - Top 100 Words');
+                daySelectorContainer.classList.add('hidden');
+                clearActiveDayButton();
+                currentDay = 0;
+                 // Highlight button
+                quickStartBtn.classList.add('ring-2', 'ring-offset-1', 'ring-indigo-400');
+                thirtyDayBtn.classList.remove('ring-2', 'ring-offset-1', 'ring-teal-400');
+            });
+
+            thirtyDayBtn.addEventListener('click', () => {
+                daySelectorContainer.classList.remove('hidden');
+                // Start Day 1 by default if no day is active or if quick start was active
+                if (currentDay <= 0) {
+                    startFlashcardSession(dailyLists[0], '30-Day Plan - Day 1');
+                    setActiveDayButton(1);
+                    currentDay = 1;
+                } else {
+                     // If a day was already selected, keep it active
+                     startFlashcardSession(dailyLists[currentDay - 1], `30-Day Plan - Day ${currentDay}`);
+                     setActiveDayButton(currentDay);
+                }
+                 // Highlight button
+                 thirtyDayBtn.classList.add('ring-2', 'ring-offset-1', 'ring-teal-400');
+                 quickStartBtn.classList.remove('ring-2', 'ring-offset-1', 'ring-indigo-400');
+            });
+
+            prevBtn.addEventListener('click', prevWord);
+            nextBtn.addEventListener('click', nextWord);
+            restartBtn.addEventListener('click', restartSession);
+
+            // Keyboard navigation for flashcards
+            document.addEventListener('keydown', (e) => {
+                // Only activate if flashcard section is visible
+                 if (!flashcardSection.classList.contains('hidden') && !completionMessageEl.classList.contains('hidden')) {
+                     // Allow restart via Enter when completion message is shown
+                     if (e.key === 'Enter' && document.activeElement !== restartBtn) {
+                         restartSession();
+                     }
+                 } else if (!flashcardSection.classList.contains('hidden')) {
+                    if (e.key === 'ArrowRight' && !nextBtn.disabled) {
+                        nextWord();
+                    } else if (e.key === 'ArrowLeft' && !prevBtn.disabled) {
+                        prevWord();
+                    } else if (e.key === ' ' || e.key === 'Enter') { // Space or Enter to flip
+                        e.preventDefault(); // Prevent page scroll on space
+                        flipCard();
+                    }
+                 }
+            });
+
+        });
+
+    </script>
+</body>
+</html>
